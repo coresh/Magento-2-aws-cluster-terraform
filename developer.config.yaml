@@ -255,6 +255,7 @@ efs:
 
 
 cloudfront:
+  staging: false
   price_class: "PriceClass_100"
   origin_shield_enabled: true
   origin_ssl_protocols: "TLSv1.2"
