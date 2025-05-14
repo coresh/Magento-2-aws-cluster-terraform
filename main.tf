@@ -900,7 +900,7 @@ module "cloudfront" {
 
   origin_group = {
     media_optimization_group = {
-      failover_status_codes      = [local.env.cloudfront.failover_criteria_status_codes]
+      failover_status_codes      = local.env.cloudfront.failover_criteria_status_codes
       primary_member_origin_id   = "${local.env.domain}-media-optimized"
       secondary_member_origin_id = "${local.env.domain}-lambda-media-optimization"
       origin_id                  = "${local.env.domain}-media-optimization-group"
@@ -917,6 +917,7 @@ module "cloudfront" {
     response_headers_policy_id = aws_cloudfront_response_headers_policy.media.id
     cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6"
     viewer_protocol_policy     = "https-only"
+    compress                   = false
    },
    {
     path_pattern     = "admin_*"
