@@ -847,9 +847,9 @@ module "cloudfront" {
         origin_protocol_policy = "https-only"
         origin_ssl_protocols   = ["TLSv1.2"]
     }
-    origin_shield {
+    origin_shield = {
         enabled               = local.env.cloudfront.origin_shield_enabled
-        origin_shield_region  = local.origin_shield_region
+        origin_shield_region  = data.aws_region.current.name
       }
     }
     alb_vpc_origin = {
