@@ -193,6 +193,14 @@ aurora_metric:
 
 s3:
   bucket:
+    lambda:
+      versioning: true
+      eventbridge: false
+      policy: "lambda_bucket_policy"
+      intelligent_tiering:
+        status: "Disabled"
+      lifecycle_rule:
+        status: "Disabled"
     logs:
       versioning: false
       eventbridge: false
