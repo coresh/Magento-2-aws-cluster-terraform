@@ -245,7 +245,7 @@ module "sns" {
   name     = "${local.project}-${each.key}"
   subscriptions = {
     for email_address in each.value.email :
-    email => {
+    "email" => {
       protocol = "email"
       endpoint = email_address
     }
@@ -260,7 +260,7 @@ module "sns" {
 module "metric_alarm" {
   source              = "terraform-aws-modules/cloudwatch/aws//modules/metric-alarm"
   version             = "5.7.1"
-  for_each            = local.env.metric_alarm
+  for_each            = local.metric_alarm
   alarm_name          = "${local.project}-${each.value.namespace}-${each.key}-${each.value.metric_name}"
   alarm_description   = "${each.value.namespace} ${each.key} ${each.value.metric_name} utilization"
   comparison_operator = each.value.comparison_operator
@@ -725,14 +725,14 @@ module "media_optimization_lambda_package" {
   }
   hash_extra     = ""
   store_on_s3    = true
-  s3_bucket      = module.s3["lambda"].bucket
+  s3_bucket      = module.s3["lambda"].s3_bucket_id
   s3_prefix      = "lambda-edge-media-optimization/"
   create_lambda_function_url = true
   authorization_type         = "AWS_IAM"
   environment_variables  = {
-      s3BucketRegion             = module.s3["media"].region
-      originalImageBucketName    = module.s3["media"].id
-      transformedImageBucketName = module.s3["media-optimized"].id
+      s3BucketRegion             = module.s3["media"].s3_bucket_region
+      originalImageBucketName    = module.s3["media"].s3_bucket_id
+      transformedImageBucketName = module.s3["media-optimized"].s3_bucket_id
       transformedImageCacheTTL   = "max-age=31622400"
       maxImageSize               = "4700000"
   }
