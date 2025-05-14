@@ -256,6 +256,8 @@ efs:
 
 cloudfront:
   staging: false
+  wait_for_deployment: false
+  http_version: "http2and3"
   price_class: "PriceClass_100"
   origin_shield_enabled: true
   origin_ssl_protocols: "TLSv1.2"
@@ -264,6 +266,7 @@ cloudfront:
   minimum_protocol_version: "TLSv1.2_2021"
   path_pattern: "/media/catalog/product/*"
   failover_criteria_status_codes: [403, 404, 500, 503, 504]
+  create_monitoring_subscription: true
 
 
 alb:
