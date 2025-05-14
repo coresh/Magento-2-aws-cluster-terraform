@@ -718,8 +718,8 @@ module "alb" {
           actions = [{
             type         = "fixed-response"
             content_type = "text/plain"
-            status_code  = 200
-            message_body = "This is a fixed response"
+            message_body = local.env.alb.fixed_response.message_body
+            status_code  = local.env.alb.fixed_response.status_code
           }]
           conditions = [{
             http_header = {
