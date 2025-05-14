@@ -855,7 +855,7 @@ module "cloudfront" {
     alb_vpc_origin = {
       domain_name = module.alb.dns_name
       origin_id   = "${local.project}-alb-vpc-origin"
-      vpc_origin_config {
+      vpc_origin_config = {
         vpc_origin_id            = "alb_vpc_origin"
         origin_keepalive_timeout = 300
         origin_read_timeout      = 300
