@@ -841,7 +841,7 @@ module "cloudfront" {
       domain_name           = split("/",module.media_optimization_lambda_package.lambda_function_url)[2]
       origin_id             = "${local.env.domain}-lambda-media-optimization"
       origin_access_control = "lambda_media_optimization"
-      custom_origin_config {
+      custom_origin_config = {
         http_port              = 80
         https_port             = 443
         origin_protocol_policy = "https-only"
