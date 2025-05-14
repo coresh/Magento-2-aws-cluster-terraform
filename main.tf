@@ -727,12 +727,8 @@ module "media_optimization_lambda_package" {
   store_on_s3    = true
   s3_bucket      = module.s3["lambda"].bucket
   s3_prefix      = "lambda-edge-media-optimization/"
-  create_current_version     = true
   create_lambda_function_url = true
   authorization_type         = "AWS_IAM"
-  create_alias = true
-  alias_name   = "lambda-edge-media-optimization-live"
-  
   environment_variables  = {
       s3BucketRegion             = module.s3["media"].region
       originalImageBucketName    = module.s3["media"].id
