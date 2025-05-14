@@ -1,0 +1,281 @@
+brand: magenx
+codename: cloud
+
+budget_limit_amount: "1000"
+
+domain: "magenx.org"
+aliases: 
+  - "othermagenx.org"
+  - "newmagenx.net"
+
+vpc:
+  cidr_block: "10.0.0.0/16"
+  availability_zone_total: 2
+  enable_dns_support: true
+  enable_dns_hostnames: true
+  instance_tenancy: default
+  create_database_subnet: true
+  exclude_zone_ids:
+    - "use1-az3"
+
+nat_gateway:
+  instance_type: "t4g.nano"
+  ami_owner: "136693071363"
+  ami_image: "debian-12-arm64*"
+  volume_size: 25
+  firewall: true
+
+
+sns:
+  topic:
+    budget:
+      email: 
+        - "admin@magenx.org"
+    devops:
+      email:
+        - "admin@magenx.org"
+    security:
+      email:
+        - "admin@magenx.org"
+        
+
+elasticache_create: true
+elasticache:
+  session:
+    node_type: "cache.t4g.micro"
+    num_cache_clusters: 2
+  cache:
+    node_type: "cache.t4g.micro"
+    num_cache_clusters: 2
+
+elasticache_metric:
+  cpu:
+    comparison_operator: "GreaterThanThreshold"
+    evaluation_periods: "3"
+    metric_name: "CPUUtilization"
+    namespace: "AWS/ElastiCache"
+    period: "60"
+    statistic: "Average"
+    threshold: "80"
+  memory:
+    comparison_operator: "LessThanThreshold"
+    evaluation_periods: "3"
+    metric_name: "FreeableMemory"
+    namespace: "AWS/ElastiCache"
+    period: "60"
+    statistic: "Average"
+    threshold: "10000000"
+  evictions:
+    comparison_operator: "GreaterThanThreshold"
+    evaluation_periods: "3"
+    metric_name: "Evictions"
+    namespace: "AWS/ElastiCache"
+    period: "60"
+    statistic: "Sum"
+    threshold: "10"
+  connections:
+    comparison_operator: "GreaterThanThreshold"
+    evaluation_periods: "3"
+    metric_name: "CurrConnections"
+    namespace: "AWS/ElastiCache"
+    period: "60"
+    statistic: "Average"
+    threshold: "1000"
+
+
+opensearch_create: true
+opensearch:
+  engine_version: "OpenSearch_2.19"
+  instance_type: "r7g.medium.search"
+  instance_count: "2"
+  tls_security_policy: "Policy-Min-TLS-1-2-PFS-2023-10"
+  ebs_enabled: true
+  volume_type: "gp3"
+  volume_size: "100"
+  dedicated_master_enabled: false
+  dedicated_master_type: "r7g.medium.search"
+  node_options:
+    node_config: false
+    count: 2
+    type: "r7g.medium.search"
+
+opensearch_metric:
+  cluster:
+    comparison_operator: "GreaterThanThreshold"
+    evaluation_periods: "1"
+    metric_name: "ClusterStatus.red"
+    namespace: "AWS/ES"
+    period: "60"
+    statistic: "Maximum"
+    threshold: "0"
+  memory:
+    comparison_operator: "GreaterThanThreshold"
+    evaluation_periods: "2"
+    metric_name: "JVMMemoryPressure"
+    namespace: "AWS/ES"
+    period: "60"
+    statistic: "Maximum"
+    threshold: "85"
+  disk:
+    comparison_operator: "LessThanThreshold"
+    evaluation_periods: "2"
+    metric_name: "FreeStorageSpace"
+    namespace: "AWS/ES"
+    period: "300"
+    statistic: "Minimum"
+    threshold: "20480"
+
+
+aurora_create: true
+aurora:
+  allocated_storage: "150"
+  storage_type: "gp3"
+  storage_encrypted: true
+  db_cluster_instance_class: "db.r6g.large"
+  db_cluster_parameter_group_family: "aurora-mysql8.0"
+  engine: "aurora-mysql"
+  engine_version: "8.0"
+  skip_final_snapshot: true
+  enabled_cloudwatch_logs_exports: ["audit", "error", "general", "slowquery"]
+  cluster_performance_insights_enabled: true
+  copy_tags_to_snapshot: true
+  backup_retention_period: "30"
+  delete_automated_backups: true
+  deletion_protection: false
+  autoscaling_enabled: true
+  autoscaling_min_capacity: 1
+  autoscaling_max_capacity: 5
+  apply_immediately: true
+  parameters:
+    log_bin_trust_function_creators: 1
+    max_allowed_packet: 268435456
+    max_connect_errors: 10000
+    interactive_timeout: 120
+    wait_timeout: 300
+    innodb_lock_wait_timeout: 60
+    tmp_table_size: "{DBInstanceClassMemory/512}"
+    max_heap_table_size: "{DBInstanceClassMemory/512}"
+
+aurora_metric:
+  cpu:
+    comparison_operator: "GreaterThanThreshold"
+    evaluation_periods: "2"
+    metric_name: "CPUUtilization"
+    namespace: "AWS/RDS"
+    period: "60"
+    statistic: "Average"
+    threshold: "80"
+  memory:
+    comparison_operator: "LessThanThreshold"
+    evaluation_periods: "2"
+    metric_name: "FreeableMemory"
+    namespace: "AWS/RDS"
+    period: "60"
+    statistic: "Average"
+    threshold: "120480"
+  connections:
+    comparison_operator: "GreaterThanThreshold"
+    evaluation_periods: "2"
+    metric_name: "DatabaseConnections"
+    namespace: "AWS/RDS"
+    period: "60"
+    statistic: "Average"
+    threshold: "500"
+  disk:
+    comparison_operator: "LessThanThreshold"
+    evaluation_periods: 2
+    metric_name: "FreeStorageSpace"
+    namespace: "AWS/RDS"
+    period: "300"
+    statistic: "Minimum"
+    threshold: "20480"
+
+
+s3:
+  bucket:
+    logs:
+      versioning: false
+      eventbridge: false
+      policy: "logs_bucket_policy"
+      intelligent_tiering:
+        status: "Enabled"
+      lifecycle_rule:
+        status: "Enabled"
+    media:
+      versioning: false
+      eventbridge: false
+      policy: "media_bucket_policy"
+      intelligent_tiering:
+        status: "Enabled"
+      lifecycle_rule:
+        status: "Enabled"
+    media-optimized:
+      eventbridge: false
+      versioning: false
+      policy: "media_optimized_bucket_policy"
+      intelligent_tiering:
+        status: "Enabled"
+      lifecycle_rule:
+        status: "Enabled"
+    system:
+      versioning: false
+      eventbridge: false
+      policy: "system_bucket_policy"
+      intelligent_tiering:
+        status: "Disabled"
+      lifecycle_rule:
+        status: "Disabled"
+    backup:
+      eventbridge: true
+      versioning: true
+      policy: "backup_bucket_policy"
+      intelligent_tiering:
+        status: "Disabled"
+      lifecycle_rule:
+        status: "Disabled"
+
+
+efs:
+  var:
+    uid: "1001"
+    gid: "1002"
+    permissions: "2770"
+  media:
+    uid: "1001"
+    gid: "1002"
+    permissions: "2770"
+
+
+cloudfront:
+  price_class: "PriceClass_100"
+  origin_shield_enabled: true
+  origin_ssl_protocols: "TLSv1.2"
+  retain_on_delete: false
+  is_ipv6_enabled: true
+  minimum_protocol_version: "TLSv1.2_2021"
+  path_pattern: "/media/catalog/product/*"
+  failover_criteria_status_codes: [403, 404, 500, 503, 504]
+
+
+alb:
+  ssl_policy: "ELBSecurityPolicy-TLS13-1-2-Res-2021-06"
+  enable_deletion_protection: false
+  target_group: frontend
+  fixed_response:
+    status_code: "418"
+    message_body: "No targets are responding to this request"
+
+
+waf:
+  restricted_countries: [CN, RU, IR, KP, SD, SY, CU]
+  whitelist_ip:
+    - "66.249.68.2/32"
+    - "192.30.252.0/22"
+    - "185.199.108.0/22"
+    - "140.82.112.0/20"
+  blacklist_ip:
+    - "47.79.0.0/17"
+    - "47.79.128.0/19"
+    - "47.80.0.0/15"
+    - "47.82.0.0/17"
+    - "47.83.0.0/16"
