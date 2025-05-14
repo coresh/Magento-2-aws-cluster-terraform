@@ -914,13 +914,11 @@ module "cloudfront" {
     bucket = module.s3["logs"].s3_bucket_bucket_domain_name
     prefix = "cloudfront"
   }
- restrictions {
-    geo_restriction {
+    geo_restriction = {
       restriction_type = "blacklist"
       locations        = local.env.waf.restricted_countries
-    }
   }
-  viewer_certificate {
+  viewer_certificate = {
     acm_certificate_arn      = try(module.acm_cloudfront.acm_certificate_arn, module.acm.acm_certificate_arn, null)
     ssl_support_method       = "sni-only"
     minimum_protocol_version = local.env.cloudfront.minimum_protocol_version
