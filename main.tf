@@ -653,7 +653,7 @@ module "alb" {
   internal = true
   name     = "${local.project}-alb"
   vpc_id   = module.vpc.vpc_id
-  subnets  = [module.vpc.private_subnets]
+  subnets  = module.vpc.private_subnets
   client_keep_alive = 300
   security_group_ingress_rules = {
     all_http = {
