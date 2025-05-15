@@ -273,6 +273,7 @@ alb:
   ssl_policy: "ELBSecurityPolicy-TLS13-1-2-Res-2021-06"
   enable_deletion_protection: false
   target_group: "frontend"
+  target_type: "instance"
   health_check_path: "health_check.php"
   fixed_response:
     status_code: "418"
