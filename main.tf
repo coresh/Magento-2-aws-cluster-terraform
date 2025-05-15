@@ -939,8 +939,10 @@ module "cloudfront" {
     cache_policy_id            = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
     viewer_protocol_policy     = "https-only"
     compress                   = true
-   },
-   {
+   }
+   ]
+   
+    default_cache_behavior = {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "alb_vpc_origin"
@@ -949,7 +951,7 @@ module "cloudfront" {
     viewer_protocol_policy   = "https-only"
     compress                 = true
     }
-  ]
+
 
   logging_config = {
     bucket = module.s3["logs"].s3_bucket_bucket_domain_name
