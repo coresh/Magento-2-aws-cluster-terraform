@@ -701,9 +701,43 @@ module "alb" {
             message_body = local.env.alb.fixed_response.message_body
             status_code  = local.env.alb.fixed_response.status_code
         }
+      rules = {
+        api = {
+          actions = [{
+            type = "forward"
+            target_group_key = "frontend"
+          }]
+          conditions = [{
+            http_header = {
+              http_header_name = "X-${title(local.env.brand)}-Secret"
+              values = [random_uuid.secret_header.result]
+            },
+            host_header = {
+              values = [local.env.domain]
+            }
+          }]
+        }
       }
     }
   }
+  target_groups = {
+    "frontend" = {
+      vpc_id = module.vpc.vpc_id
+      name = "frontend"
+      protocol    = "HTTP"
+      port        = 80
+      target_type = "instance"
+      healthcheck = {
+          path                = "/${random_string.health_check.result}"
+          interval            = 30
+          timeout             = 5
+          healthy_threshold   = 3
+          unhealthy_threshold = 2
+          matcher             = "200"
+      }
+    }
+  }
+}
 
 /////////////////////////////////////////////////////[ LAMBDA@EDGE MODULE ]///////////////////////////////////////////////
 
