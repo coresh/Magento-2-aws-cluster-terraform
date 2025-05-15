@@ -1202,7 +1202,7 @@ module "ecs_service" {
   }
   container_definitions = {
     (local.env.ecs.container_name) = {
-      image = "public.ecr.aws/ecs-sample-image/amazon-ecs-sample:latest"
+      image = local.env.ecr.docker_image
       port_mappings = [
         {
           name          = local.env.ecs.container_name
