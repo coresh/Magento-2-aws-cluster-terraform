@@ -723,12 +723,12 @@ module "alb" {
   target_groups = {
     "frontend" = {
       vpc_id = module.vpc.vpc_id
-      name = "frontend"
+      name = local.env.alb.target_group
       protocol    = "HTTP"
       port        = 80
       target_type = "instance"
       healthcheck = {
-          path                = "/${random_string.health_check.result}"
+          path                = local.env.alb.health_check_path
           interval            = 30
           timeout             = 5
           healthy_threshold   = 3
