@@ -217,7 +217,7 @@ module "acm" {
   version                   = "5.1.1"
   domain_name               = local.env.domain
   validation_method         = "DNS"
-  subject_alternative_names = concat(["*.${local.env.domain}"], local.env.aliases)
+  subject_alternative_names = concat(compact(local.env.san), compact(local.env.aliases))
   create_route53_records    = false
   validate_certificate      = false
 }
@@ -228,7 +228,7 @@ module "acm_cloudfront" {
   providers                 = { aws = aws.us-east-1 }
   domain_name               = local.env.domain
   validation_method         = "DNS"
-  subject_alternative_names = concat(["*.${local.env.domain}"], local.env.aliases)
+  subject_alternative_names = concat(compact(local.env.san), compact(local.env.aliases))
   create_route53_records    = false
   validate_certificate      = false
 }
@@ -830,7 +830,7 @@ resource "aws_cloudfront_response_headers_policy" "media" {
 module "cloudfront" {
   source              = "terraform-aws-modules/cloudfront/aws"
   version             = "4.1.0"
-  aliases             = ["${local.env.domain}"]
+  aliases             = concat(compact(local.env.aliases))
   comment             = "${local.env.domain} media and static files"
   enabled             = true
   staging             = local.env.cloudfront.staging
