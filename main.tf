@@ -692,7 +692,7 @@ module "alb" {
       deregistration_delay = 300
       create_attachment    = false
       health_check = {
-        path                = local.env.alb.health_check_path
+        path                = "/${local.env.alb.health_check_path}"
         interval            = 30
         timeout             = 5
         healthy_threshold   = 3
