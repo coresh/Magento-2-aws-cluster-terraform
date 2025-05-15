@@ -655,6 +655,7 @@ module "alb" {
   vpc_id   = module.vpc.vpc_id
   subnets  = module.vpc.private_subnets
   client_keep_alive = 300
+  enable_deletion_protection = local.env.alb.enable_deletion_protection
   security_group_ingress_rules = {
     all_http = {
       from_port   = 80
@@ -681,63 +682,70 @@ module "alb" {
     bucket = module.s3["logs"].s3_bucket_id
     prefix = "ALB_logs"
   }
-
-  listeners = {
-    http-https-redirect = {
-      port     = 80
-      protocol = "HTTP"
-      redirect = {
-        port        = "443"
-        protocol    = "HTTPS"
-        status_code = "HTTP_301"
-        }
+  target_groups = {
+    frontend = {
+      name                 = "${local.project}-${local.env.alb.target_group}"
+      port                 = 80
+      protocol             = "HTTP"
+      vpc_id               = module.vpc.vpc_id
+      target_type          = local.env.alb.target_type
+      deregistration_delay = 300
+      create_attachment    = false
+      health_check = {
+        path                = local.env.alb.health_check_path
+        interval            = 30
+        timeout             = 5
+        healthy_threshold   = 3
+        unhealthy_threshold = 2
+        matcher             = "200"
       }
+    }
+  }
+  listeners = {
     https = {
       port            = 443
       protocol        = "HTTPS"
-      certificate_arn = try(module.acm_cloudfront.acm_certificate_arn, module.acm.acm_certificate_arn, null)
-        fixed-response = {
-            content_type = "text/plain"
-            message_body = local.env.alb.fixed_response.message_body
-            status_code  = local.env.alb.fixed_response.status_code
-        }
+      ssl_policy      = local.env.alb.ssl_policy
+      certificate_arn = module.acm.acm_certificate_arn
+      fixed_response = {
+        content_type = "text/plain"
+        message_body = local.env.alb.fixed_response.message_body
+        status_code  = local.env.alb.fixed_response.status_code
+        order = 1
+      }
       rules = {
-        api = {
+        frontend = {
+          priority = 30
           actions = [{
-            type = "forward"
+            type             = "forward"
             target_group_key = "frontend"
+            order = 1
           }]
           conditions = [{
+            host_header = {
+              values = [local.env.domain]
+            }
+          },
+          {
             http_header = {
               http_header_name = "X-${title(local.env.brand)}-Secret"
               values = [random_uuid.secret_header.result]
-            },
-            host_header = {
-              values = [local.env.domain]
             }
           }]
         }
       }
     }
-  }
-  target_groups = {
-    "frontend" = {
-      vpc_id = module.vpc.vpc_id
-      name = local.env.alb.target_group
-      protocol    = "HTTP"
-      port        = 80
-      target_type = "instance"
-      healthcheck = {
-          path                = local.env.alb.health_check_path
-          interval            = 30
-          timeout             = 5
-          healthy_threshold   = 3
-          unhealthy_threshold = 2
-          matcher             = "200"
+    http = {
+      port     = 80
+      protocol = "HTTP"
+        redirect = {
+          port        = "443"
+          protocol    = "HTTPS"
+          status_code = "HTTP_301"
+        }
       }
     }
   }
-}
 
 /////////////////////////////////////////////////////[ LAMBDA@EDGE MODULE ]///////////////////////////////////////////////
 
