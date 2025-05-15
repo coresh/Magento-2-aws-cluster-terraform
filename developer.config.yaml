@@ -4,6 +4,8 @@ codename: cloud
 budget_limit_amount: "1000"
 
 domain: "magenx.org"
+san: 
+  - "*.magenx.org"
 aliases: 
   - ""
 
