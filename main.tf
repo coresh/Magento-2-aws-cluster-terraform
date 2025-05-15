@@ -918,7 +918,7 @@ module "cloudfront" {
     }
   }
 
-  ordered_cache_behavior = [
+  ordered_cache_behavior = [ 
    {
     path_pattern     = local.env.cloudfront.path_pattern
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
@@ -934,7 +934,7 @@ module "cloudfront" {
     path_pattern     = "admin_*"
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${local.project}-alb-vpc-origin"	
+    target_origin_id = "alb_vpc_origin"	
     origin_request_policy_id   = "216adef6-5c7f-47e4-b989-5492eafa07d3"
     cache_policy_id            = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
     viewer_protocol_policy     = "https-only"
@@ -943,7 +943,7 @@ module "cloudfront" {
    {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${local.project}-alb-vpc-origin"
+    target_origin_id = "alb_vpc_origin"
     origin_request_policy_id = "216adef6-5c7f-47e4-b989-5492eafa07d3"
     cache_policy_id          = "658327ea-f89d-4fab-a63d-7e88639e58f6"
     viewer_protocol_policy   = "https-only"
