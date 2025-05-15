@@ -690,51 +690,20 @@ module "alb" {
         port        = "443"
         protocol    = "HTTPS"
         status_code = "HTTP_301"
-      }
-      rules = {
-        fixed-response = {
-          priority = 1
-          actions = [{
-            type         = "fixed-response"
-            content_type = "text/plain"
-            message_body = local.env.alb.fixed_response.message_body
-            status_code  = local.env.alb.fixed_response.status_code
-          }]
-          conditions = [{
-            host_header = {
-              values = [local.env.domain]
-            }
-          }]
         }
       }
-    }
     https = {
       port            = 443
       protocol        = "HTTPS"
       certificate_arn = try(module.acm_cloudfront.acm_certificate_arn, module.acm.acm_certificate_arn, null)
-      rules = {
         fixed-response = {
-          priority = 3
-          actions = [{
-            type         = "fixed-response"
             content_type = "text/plain"
             message_body = local.env.alb.fixed_response.message_body
             status_code  = local.env.alb.fixed_response.status_code
-          }]
-          conditions = [{
-            http_header = {
-              http_header_name = "X-${title(local.env.brand)}-Secret"
-              values = [random_uuid.secret_header.result]
-            },
-            host_header = {
-              values = [local.env.domain]
-            }
-          }]
         }
       }
     }
   }
-}
 
 /////////////////////////////////////////////////////[ LAMBDA@EDGE MODULE ]///////////////////////////////////////////////
 
