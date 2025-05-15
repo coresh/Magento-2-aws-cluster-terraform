@@ -280,6 +280,21 @@ alb:
     status_code: "418"
     message_body: "No targets are responding to this request"
 
+asg:
+  instance_type: "t4g.medium"
+  health_check_type: "EC2"
+  min_size: 1
+  max_size: 4
+  desired_capacity: 2
+
+ecr:
+  force_delete: true
+  docker_image: "public.ecr.aws/docker/library/hello-world:latest"
+  
+ecs:
+  container_name: "magenx-ecommerce-app"
+  container_port: "80"
+  
 
 waf:
   restricted_countries: [CN, RU, IR, KP, SD, SY, CU]
