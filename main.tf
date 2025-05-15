@@ -1098,3 +1098,144 @@ resource "aws_wafv2_ip_set" "this" {
   ip_address_version = "IPV4"
   addresses          = each.value.addresses
 }
+
+/////////////////////////////////////////////////////[ AUTOSCALING MODULE ]///////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create Autoscaling group
+# # ---------------------------------------------------------------------------------------------------------------------#
+module "autoscaling" {
+  source           = "terraform-aws-modules/autoscaling/aws"
+  version          = "8.3.0"
+  name             = "${local.project}-autoscaling"
+  image_id         = data.aws_ami.this.id
+  instance_type    = local.env.asg.instance_type
+  security_groups  = [module.autoscaling_security_group.security_group_id]
+  user_data        = <<-END
+        #!/bin/bash
+        cat <<'EOF' >> /etc/ecs/ecs.config
+        ECS_CLUSTER="${local.project}-ecs-cluster"
+        ECS_LOGLEVEL=debug
+        ECS_CONTAINER_INSTANCE_TAGS=${jsonencode("${local.project}-${each.key}")}
+        ECS_ENABLE_TASK_IAM_ROLE=true
+        EOF
+  END
+  vpc_zone_identifier    = module.vpc.private_subnets
+  health_check_type      = local.env.asg.health_check_type
+  min_size               = local.env.asg.min_size
+  max_size               = local.env.asg.max_size
+  desired_capacity       = local.env.asg.desired_capacity
+  protect_from_scale_in           = true
+  use_mixed_instances_policy      = false
+  ignore_desired_capacity_changes = true
+  create_iam_instance_profile     = true
+  iam_role_name                   = "${local.project}-${each.key}-ECS-EC2-Role"
+  iam_role_description            = "ECS role for ${local.project}"
+  iam_role_policies = {
+    AmazonEC2ContainerServiceforEC2Role = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+    AmazonSSMManagedInstanceCore        = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  }
+  autoscaling_group_tags = {
+    AmazonECSManaged = true
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create security group for Autoscaling group
+# # ---------------------------------------------------------------------------------------------------------------------#
+module "autoscaling_security_group" {
+  source      = "terraform-aws-modules/security-group/aws"
+  version     = "5.3.0"
+  name        = "${local.project}-autoscaling-security-group"
+  description = "Autoscaling group security group"
+  vpc_id      = module.vpc.vpc_id
+  computed_ingress_with_source_security_group_id = [{
+      rule                     = "http-80-tcp"
+      source_security_group_id = module.alb.security_group_id
+    }]
+  number_of_computed_ingress_with_source_security_group_id = 1
+  egress_rules = ["all-all"]
+}
+
+/////////////////////////////////////////////////////[ ECS CLUSTER MODULE ]///////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create ECS Cluster configuration
+# # ---------------------------------------------------------------------------------------------------------------------#
+module "ecs_cluster" {
+  source       = "terraform-aws-modules/terraform-aws-ecs//modules/cluster"
+  cluster_name = "${local.project}-ecs-cluster"
+  default_capacity_provider_use_fargate = false
+  autoscaling_capacity_providers = {
+    frontend = {
+      auto_scaling_group_arn         = module.autoscaling.autoscaling_group_arn
+      managed_termination_protection = "ENABLED"
+      managed_scaling = {
+        maximum_scaling_step_size = 4
+        minimum_scaling_step_size = 1
+        status                    = "ENABLED"
+        target_capacity           = 60
+      }
+      default_capacity_provider_strategy = {
+        weight = 60
+        base   = 20
+      }
+    }
+  }
+}
+
+/////////////////////////////////////////////////////[ ECS CLUSTER MODULE ]///////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create ECS Service configuration
+# # ---------------------------------------------------------------------------------------------------------------------#
+module "ecs_service" {
+  source      = "terraform-aws-modules/terraform-aws-ecs//modules/service"
+  name        = local.name
+  cluster_arn = module.ecs_cluster.arn
+  requires_compatibilities   = ["EC2"]
+  capacity_provider_strategy = {
+    frontend = {
+      capacity_provider = module.ecs_cluster.autoscaling_capacity_providers.name
+      weight            = 1
+      base              = 1
+    }
+  }
+  container_definitions = {
+    (local.env.ecs.container_name) = {
+      image = "public.ecr.aws/ecs-sample-image/amazon-ecs-sample:latest"
+      port_mappings = [
+        {
+          name          = local.env.ecs.container_name
+          containerPort = local.env.ecs.container_port
+          protocol      = local.env.ecs.protocol
+        }
+      ]
+      readonly_root_filesystem               = true
+      enable_cloudwatch_logging              = true
+      create_cloudwatch_log_group            = true
+      cloudwatch_log_group_name              = "/aws/ecs/${local.project}/${local.env.ecs.container_name}"
+      cloudwatch_log_group_retention_in_days = 7
+      log_configuration = {
+        logDriver = "awslogs"
+      }
+    }
+  }
+  load_balancer = {
+    service = {
+      target_group_arn = module.alb.target_groups.arn
+      container_name   = local.env.ecs.container_name
+      container_port   = local.env.ecs.container_port
+    }
+  }
+  subnet_ids = module.vpc.private_subnets
+  security_group_rules = {
+    alb_http_ingress = {
+      type                     = "ingress"
+      from_port                = local.env.ecs.container_port
+      to_port                  = local.env.ecs.container_port
+      protocol                 = "tcp"
+      description              = "Service port"
+      source_security_group_id = module.alb.security_group_id
+    }
+  }
+}
