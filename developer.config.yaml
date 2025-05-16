@@ -27,6 +27,30 @@ nat_gateway:
   firewall: true
 
 
+ec2:
+  opensearch:
+    instance_type: "t4g.small"
+    service: true
+    volume_size: 25
+    desired_capacity: 1
+    min_size: 1
+    max_size: 1
+  redis:
+    instance_type: "t4g.small"
+    service: true
+    volume_size: 25
+    desired_capacity: 1
+    min_size: 1
+    max_size: 1
+  rabbitmq:
+    instance_type: "t4g.nano"
+    service: true
+    volume_size: 25
+    desired_capacity: 1
+    min_size: 1
+    max_size: 1
+
+
 sns:
   topic:
     budget:
@@ -131,23 +155,27 @@ opensearch_metric:
 
 aurora_create: true
 aurora:
-  allocated_storage: "150"
+  allocated_storage: "120"
   storage_type: "gp3"
   storage_encrypted: true
-  db_cluster_instance_class: "db.r6g.large"
-  db_cluster_parameter_group_family: "aurora-mysql8.0"
+  instance_class: "db.r6g.large"
   engine: "aurora-mysql"
   engine_version: "8.0"
   skip_final_snapshot: true
   enabled_cloudwatch_logs_exports: ["audit", "error", "general", "slowquery"]
   cluster_performance_insights_enabled: true
+  cluster_performance_insights_retention_period: 7
+  manage_master_user_password: false
+  manage_master_user_password_rotation: false
+  master_user_password_rotation_automatically_after_days: 30
+  db_cluster_parameter_group_family: "aurora-mysql8.0"
   copy_tags_to_snapshot: true
   backup_retention_period: "30"
   delete_automated_backups: true
   deletion_protection: false
   autoscaling_enabled: true
   autoscaling_min_capacity: 1
-  autoscaling_max_capacity: 5
+  autoscaling_max_capacity: 2
   apply_immediately: true
   parameters:
     log_bin_trust_function_creators: 1
