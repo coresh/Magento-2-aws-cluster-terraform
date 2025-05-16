@@ -626,7 +626,7 @@ module "aurora" {
       cidr_blocks = module.vpc.private_subnets_cidr_blocks
     }
   }
-  db_subnet_group_name = "${local.project}-subnet-group"
+  db_subnet_group_name = module.vpc.database_subnet_group_name
   enabled_cloudwatch_logs_exports = local.env.aurora.enabled_cloudwatch_logs_exports
   cluster_performance_insights_enabled          = local.env.aurora.cluster_performance_insights_enabled
   cluster_performance_insights_retention_period = 31
@@ -1118,7 +1118,7 @@ module "autoscaling" {
   image_id         = data.aws_ami.this.id
   instance_type    = local.env.asg.instance_type
   security_groups  = [module.autoscaling_security_group.security_group_id]
-  user_data        = <<-END
+  user_data        = base64encode(<<-END
         #!/bin/bash
         cat <<'EOF' >> /etc/ecs/ecs.config
         ECS_CLUSTER="${local.project}-ecs-cluster"
@@ -1126,7 +1126,7 @@ module "autoscaling" {
         ECS_CONTAINER_INSTANCE_TAGS=${jsonencode("${local.project}")}
         ECS_ENABLE_TASK_IAM_ROLE=true
         EOF
-  END
+  END)
   vpc_zone_identifier    = module.vpc.private_subnets
   health_check_type      = local.env.asg.health_check_type
   min_size               = local.env.asg.min_size
