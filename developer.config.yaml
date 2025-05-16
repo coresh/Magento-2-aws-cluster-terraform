@@ -27,6 +27,19 @@ nat_gateway:
   firewall: true
 
 
+sns:
+  topic:
+    budget:
+      email: 
+        - "admin@magenx.org"
+    devops:
+      email:
+        - "admin@magenx.org"
+    security:
+      email:
+        - "admin@magenx.org"
+
+
 ec2:
   opensearch:
     instance_type: "t4g.small"
@@ -48,21 +61,8 @@ ec2:
     volume_size: 25
     desired_capacity: 1
     min_size: 1
-    max_size: 1
+    max_size: 1 
 
-
-sns:
-  topic:
-    budget:
-      email: 
-        - "admin@magenx.org"
-    devops:
-      email:
-        - "admin@magenx.org"
-    security:
-      email:
-        - "admin@magenx.org"
-        
 
 elasticache_create: true
 elasticache:
@@ -324,6 +324,7 @@ ecr:
 ecs:
   container_name: "magenx-ecommerce-app"
   container_port: 80
+  protocol: "tcp"
   
 
 waf:
