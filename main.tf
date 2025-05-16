@@ -1231,7 +1231,7 @@ module "ecs_service" {
   }
   load_balancer = {
     service = {
-      target_group_arn = module.alb.target_groups.arn
+      target_group_arn = keys(module.alb.target_groups)[0]
       container_name   = local.env.ecs.container_name
       container_port   = local.env.ecs.container_port
     }
