@@ -610,7 +610,6 @@ module "aurora" {
   enabled_cloudwatch_logs_exports = local.env.aurora.enabled_cloudwatch_logs_exports
   cluster_performance_insights_enabled          = local.env.aurora.cluster_performance_insights_enabled
   cluster_performance_insights_retention_period = local.env.aurora.cluster_performance_insights_retention_period
-  allocated_storage         = local.env.aurora.allocated_storage
   storage_type              = local.env.aurora.storage_type
   storage_encrypted         = local.env.aurora.storage_encrypted
   skip_final_snapshot = local.env.aurora.skip_final_snapshot
