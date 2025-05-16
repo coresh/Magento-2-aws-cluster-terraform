@@ -1136,7 +1136,7 @@ apt -yq install docker-ce docker-ce-cli containerd.io
 # install ecs agent
 cd /tmp/
 curl -O https://s3.${data.aws_region.current.name}.amazonaws.com/amazon-ecs-agent-${data.aws_region.current.name}/amazon-ecs-init-latest.$(dpkg --print-architecture).deb
-dpkg -i amazon-ecs-init-latest.arm64.deb
+dpkg -i amazon-ecs-init-latest.$(dpkg --print-architecture).deb
 systemctl enable ecs
 systemctl start ecs
 # install ssm manager
