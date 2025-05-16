@@ -293,7 +293,7 @@ ecr:
   
 ecs:
   container_name: "magenx-ecommerce-app"
-  container_port: "80"
+  container_port: 80
   
 
 waf:
