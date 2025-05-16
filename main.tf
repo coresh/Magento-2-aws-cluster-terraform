@@ -612,8 +612,6 @@ module "aurora" {
   enabled_cloudwatch_logs_exports = local.env.aurora.enabled_cloudwatch_logs_exports
   cluster_performance_insights_enabled          = local.env.aurora.cluster_performance_insights_enabled
   cluster_performance_insights_retention_period = local.env.aurora.cluster_performance_insights_retention_period
-  storage_type              = local.env.aurora.storage_type
-  storage_encrypted         = local.env.aurora.storage_encrypted
   skip_final_snapshot = local.env.aurora.skip_final_snapshot
   apply_immediately   = local.env.aurora.apply_immediately
   create_db_cluster_parameter_group      = true
@@ -1134,6 +1132,22 @@ END
     AmazonEC2ContainerServiceforEC2Role = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
     AmazonSSMManagedInstanceCore        = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   }
+  block_device_mappings = [{
+      device_name = "/dev/xvda"
+      no_device   = 0
+      ebs = {
+        delete_on_termination = true
+        encrypted             = true
+        volume_size           = 50
+        volume_type           = "gp3"
+      }
+    }]
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
+  }
   autoscaling_group_tags = {
     AmazonECSManaged = true
   }
@@ -1192,7 +1206,6 @@ module "ecs_service" {
   name        = "${local.project}-ecs-service"
   cluster_arn = module.ecs_cluster.arn
   requires_compatibilities   = ["EC2"]
-  enable_execute_command     = true
   capacity_provider_strategy = {
     frontend = {
       capacity_provider = keys(module.ecs_cluster.autoscaling_capacity_providers)[0]
@@ -1236,6 +1249,7 @@ module "ecs_service" {
           value = ""
         },
       ]
+      enable_execute_command                 = true
       readonly_root_filesystem               = true
       enable_cloudwatch_logging              = true
       create_cloudwatch_log_group            = true
