@@ -125,36 +125,15 @@ resource "aws_budgets_budget" "this" {
   limit_unit        = "USD"
   time_unit         = "MONTHLY"
 
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 50
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "FORECASTED"
-    subscriber_sns_topic_arns  = [module.sns["budget"].topic_arn]
-  }
-
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 75
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "FORECASTED"
-    subscriber_sns_topic_arns  = [module.sns["budget"].topic_arn]
-  }
-
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 100
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "FORECASTED"
-    subscriber_sns_topic_arns  = [module.sns["budget"].topic_arn]
-  }
-
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 150
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "FORECASTED"
-    subscriber_sns_topic_arns  = [module.sns["budget"].topic_arn]
+  dynamic "notification" {
+    for_each = toset(["25", "50", "75", "100", "125", "150"])
+    content {
+      comparison_operator        = "GREATER_THAN"
+      threshold                  = notification.value
+      threshold_type             = "PERCENTAGE"
+      notification_type          = "FORECASTED"
+      subscriber_sns_topic_arns  = [module.sns["budget"].topic_arn]
+    }
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
