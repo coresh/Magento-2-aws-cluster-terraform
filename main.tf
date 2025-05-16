@@ -1123,7 +1123,7 @@ module "autoscaling" {
         cat <<'EOF' >> /etc/ecs/ecs.config
         ECS_CLUSTER="${local.project}-ecs-cluster"
         ECS_LOGLEVEL=debug
-        ECS_CONTAINER_INSTANCE_TAGS=${jsonencode("${local.project}-${each.key}")}
+        ECS_CONTAINER_INSTANCE_TAGS=${jsonencode("${local.project}")}
         ECS_ENABLE_TASK_IAM_ROLE=true
         EOF
   END
@@ -1136,7 +1136,7 @@ module "autoscaling" {
   use_mixed_instances_policy      = false
   ignore_desired_capacity_changes = true
   create_iam_instance_profile     = true
-  iam_role_name                   = "${local.project}-${each.key}-ECS-EC2-Role"
+  iam_role_name                   = "${local.project}-ECS-EC2-Role"
   iam_role_description            = "ECS role for ${local.project}"
   iam_role_policies = {
     AmazonEC2ContainerServiceforEC2Role = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
