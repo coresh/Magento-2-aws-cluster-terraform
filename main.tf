@@ -893,13 +893,12 @@ module "cloudfront" {
       ]
     }
   }
-
   origin_group = {
     media_optimization_group = {
       failover_status_codes      = local.env.cloudfront.failover_criteria_status_codes
-      primary_member_origin_id   = "${local.env.domain}-media-optimized"
-      secondary_member_origin_id = "${local.env.domain}-lambda-media-optimization"
-      origin_id                  = "${local.env.domain}-media-optimization-group"
+      primary_member_origin_id   = "media-optimized"
+      secondary_member_origin_id = "lambda-media-optimization"
+      origin_id                  = "media-optimization-group"
     }
   }
 
@@ -908,7 +907,7 @@ module "cloudfront" {
     path_pattern     = local.env.cloudfront.path_pattern
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${local.env.domain}-media-optimization-group"	
+    target_origin_id = "media_optimization_group"	
     origin_request_policy_id   = "216adef6-5c7f-47e4-b989-5492eafa07d3"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.media.id
     cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6"
