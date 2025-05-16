@@ -1218,6 +1218,24 @@ module "ecs_service" {
           protocol      = local.env.ecs.protocol
         }
       ]
+      environment = [
+        {
+          name  = "OPENSEARCH"
+          value = ""
+        },
+        {
+          name  = "ELASTICACHE"
+          value = ""
+        },
+        {
+          name  = "DATABASE"
+          value = ""
+        },
+        {
+          name  = "DB_NAME"
+          value = ""
+        },
+      ]
       readonly_root_filesystem               = true
       enable_cloudwatch_logging              = true
       create_cloudwatch_log_group            = true
