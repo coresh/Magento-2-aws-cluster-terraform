@@ -93,6 +93,8 @@ opensearch:
   ebs_enabled: true
   volume_type: "gp3"
   volume_size: "100"
+  ip_address_type: "ipv4"
+  auto_software_update_enabled: false
   dedicated_master_enabled: false
   dedicated_master_type: "r7g.medium.search"
   node_options:
