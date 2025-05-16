@@ -285,7 +285,7 @@ alb:
 asg:
   instance_type: "t4g.medium"
   health_check_type: "EC2"
-  min_size: 1
+  min_size: 2
   max_size: 4
   desired_capacity: 2
 
