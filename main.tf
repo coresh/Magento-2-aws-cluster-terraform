@@ -589,7 +589,7 @@ module "aurora" {
   availability_zones   = module.vpc.azs
   instance_class = local.env.aurora.instance_class
   instances = {
-    (${local.project}-instance-one) = {
+    ("${local.project}-instance-one") = {
       publicly_accessible = false
     }
   }
