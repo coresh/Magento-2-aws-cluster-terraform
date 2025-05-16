@@ -1202,7 +1202,7 @@ module "ecs_service" {
   requires_compatibilities   = ["EC2"]
   capacity_provider_strategy = {
     frontend = {
-      capacity_provider = module.ecs_cluster.autoscaling_capacity_providers.name
+      capacity_provider = module.ecs_cluster.autoscaling_capacity_providers
       weight            = 1
       base              = 1
     }
@@ -1229,7 +1229,7 @@ module "ecs_service" {
   }
   load_balancer = {
     service = {
-      target_group_arn = module.alb.target_groups.arn
+      target_group_arn = module.alb.target_groups
       container_name   = local.env.ecs.container_name
       container_port   = local.env.ecs.container_port
     }
