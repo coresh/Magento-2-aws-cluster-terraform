@@ -199,7 +199,7 @@ resource "aws_ce_anomaly_subscription" "cost_alert" {
 module "vpc" {
   # mini vpc mudule to create private subnets and nat ec2 instace per az
   source                  = "magenx/vpc/aws"
-  version                 = "1.0.5"
+  version                 = "1.0.6"
   project                 = local.project
   enable_dns_support      = local.env.vpc.enable_dns_support
   enable_dns_hostnames    = local.env.vpc.enable_dns_hostnames
