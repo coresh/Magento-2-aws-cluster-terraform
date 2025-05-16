@@ -1169,7 +1169,7 @@ module "autoscaling_security_group" {
 # Create ECS Cluster configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "ecs_cluster" {
-  source       = "terraform-aws-modules/terraform-aws-ecs//modules/cluster"
+  source       = "terraform-aws-modules/ecs/aws//modules/cluster"
   cluster_name = "${local.project}-ecs-cluster"
   default_capacity_provider_use_fargate = false
   autoscaling_capacity_providers = {
@@ -1196,7 +1196,7 @@ module "ecs_cluster" {
 # Create ECS Service configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "ecs_service" {
-  source      = "terraform-aws-modules/terraform-aws-ecs//modules/service"
+  source      = "terraform-aws-modules/ecs/aws//modules/service"
   name        = local.name
   cluster_arn = module.ecs_cluster.arn
   requires_compatibilities   = ["EC2"]
