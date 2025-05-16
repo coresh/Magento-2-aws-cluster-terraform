@@ -580,6 +580,7 @@ module "aurora" {
   name            = "${local.project}-aurora-cluster"
   engine          = local.env.aurora.engine
   engine_version  = local.env.aurora.engine_version
+  cluster_identifier = "${local.project}-aurora-cluster"
   manage_master_user_password          = local.env.aurora.manage_master_user_password
   manage_master_user_password_rotation = local.env.aurora.manage_master_user_password_rotation
   master_user_password_rotation_automatically_after_days = local.env.aurora.master_user_password_rotation_automatically_after_days
@@ -594,6 +595,7 @@ module "aurora" {
   instances = {
     instance-one = {
       publicly_accessible = false
+      identifier = "${local.project}-instance-one"
     }
   }
   autoscaling_enabled      = local.env.aurora.autoscaling_enabled
@@ -620,8 +622,19 @@ module "aurora" {
   create_db_cluster_parameter_group      = true
   db_cluster_parameter_group_name        = "${local.project}-aurora-cluster-parameters"
   db_cluster_parameter_group_family      = "aurora-mysql8.0"
-  db_cluster_parameter_group_description = "${local.project} example cluster parameter group"
+  db_cluster_parameter_group_description = "${local.project} cluster parameter group"
   db_cluster_parameter_group_parameters = [
+    for name, value in local.env.aurora.parameters : {
+      name         = name
+      value        = value
+      apply_method = "immediate"
+    }
+  ]
+  create_db_parameter_group        = true
+  db_parameter_group_name        = "${local.project}-aurora-instance-parameters"
+  db_parameter_group_family      = "aurora-mysql8.0"
+  db_parameter_group_description = "${local.project} instance parameter group"
+  db_parameter_group_parameters = [
     for name, value in local.env.aurora.parameters : {
       name         = name
       value        = value
@@ -899,9 +912,9 @@ module "cloudfront" {
   origin_group = {
     media_optimization_group = {
       failover_status_codes      = local.env.cloudfront.failover_criteria_status_codes
-      primary_member_origin_id   = "s3_bucket_media_optimized"
-      secondary_member_origin_id = "lambda_media_optimization"
-      origin_id                  = "media-optimization-group"
+      primary_member_origin_id   = "${local.env.domain}-media-optimized"
+      secondary_member_origin_id = "${local.env.domain}-lambda-media-optimization"
+      origin_id                  = "${local.env.domain}-media-optimization-group"
     }
   }
 
@@ -910,7 +923,7 @@ module "cloudfront" {
     path_pattern     = local.env.cloudfront.path_pattern
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "media_optimization_group"	
+    target_origin_id = "${local.env.domain}-media-optimization-group"	
     origin_request_policy_id   = "216adef6-5c7f-47e4-b989-5492eafa07d3"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.media.id
     cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6"
@@ -921,7 +934,7 @@ module "cloudfront" {
     path_pattern     = "admin_*"
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "alb_vpc_origin"	
+    target_origin_id = "${local.project}-alb-vpc-origin"	
     origin_request_policy_id   = "216adef6-5c7f-47e4-b989-5492eafa07d3"
     cache_policy_id            = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
     viewer_protocol_policy     = "https-only"
@@ -932,7 +945,7 @@ module "cloudfront" {
     default_cache_behavior = {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "alb_vpc_origin"
+    target_origin_id = "${local.project}-alb-vpc-origin"
     origin_request_policy_id = "216adef6-5c7f-47e4-b989-5492eafa07d3"
     cache_policy_id          = "658327ea-f89d-4fab-a63d-7e88639e58f6"
     viewer_protocol_policy   = "https-only"
