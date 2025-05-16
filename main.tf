@@ -542,7 +542,7 @@ module "opensearch" {
       type        = "AWS"
       identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
     }]
-    resources = ["arn:aws:es:${var.region}:${data.aws_caller_identity.current.account_id}:domain/*"]
+    resources = ["arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/*"]
   }
 ]
 }
