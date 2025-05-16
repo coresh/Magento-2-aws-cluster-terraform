@@ -1101,6 +1101,7 @@ module "autoscaling" {
 <<-END
 #!/bin/bash
 # ecs cluster configuration
+mkdir -p /etc/ecs
 cat <<'EOF' >> /etc/ecs/ecs.config
 ECS_CLUSTER="${local.project}-ecs-cluster"
 ECS_LOGLEVEL=debug
@@ -1191,6 +1192,7 @@ module "ecs_service" {
   name        = "${local.project}-ecs-service"
   cluster_arn = module.ecs_cluster.arn
   requires_compatibilities   = ["EC2"]
+  enable_execute_command     = true
   capacity_provider_strategy = {
     frontend = {
       capacity_provider = keys(module.ecs_cluster.autoscaling_capacity_providers)[0]
@@ -1198,9 +1200,17 @@ module "ecs_service" {
       base              = 1
     }
   }
+  deployment_circuit_breaker = {
+    enable   = true
+    rollback = true
+  }
+  cpu    = local.env.ecs.cluster_cpu
+  memory = local.env.ecs.cluster_memory
   container_definitions = {
     (local.env.ecs.container_name) = {
-      image = local.env.ecr.docker_image
+      image  = local.env.ecr.docker_image
+      cpu    = local.env.ecs.container_cpu
+      memory = local.env.ecs.container_memory
       port_mappings = [
         {
           name          = local.env.ecs.container_name
