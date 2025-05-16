@@ -586,7 +586,7 @@ module "aurora" {
   master_user_password_rotation_automatically_after_days = local.env.aurora.master_user_password_rotation_automatically_after_days
   master_username = random_string.aurora.result
   master_password = random_password.aurora.result
-  database_name           = replace(local.project, "-", "_")
+  database_name   = replace(local.project, "-", "_")
   backup_retention_period = 7
   preferred_backup_window = "02:00-05:00"
   vpc_id               = module.vpc.vpc_id
@@ -630,11 +630,11 @@ module "aurora" {
       apply_method = "immediate"
     }
   ]
-  create_db_parameter_group        = true
+  create_db_parameter_group      = true
   db_parameter_group_name        = "${local.project}-aurora-instance-parameters"
   db_parameter_group_family      = "aurora-mysql8.0"
   db_parameter_group_description = "${local.project} instance parameter group"
-  db_parameter_group_parameters = [
+  db_parameter_group_parameters  = [
     for name, value in local.env.aurora.parameters : {
       name         = name
       value        = value
