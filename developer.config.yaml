@@ -325,7 +325,10 @@ ecs:
   container_name: "magenx-ecommerce-app"
   container_port: 80
   protocol: "tcp"
-  
+  cluster_cpu: 2048
+  cluster_memory: 4096
+  container_cpu: 1024
+  container_memory: 2058
 
 waf:
   restricted_countries: [CN, RU, IR, KP, SD, SY, CU]
