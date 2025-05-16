@@ -1141,7 +1141,7 @@ END
         volume_type           = "gp3"
       }
     }]
-  metadata_options {
+  metadata_options = {
     http_endpoint               = "enabled"
     http_tokens                 = "required"
     http_put_response_hop_limit = 1
