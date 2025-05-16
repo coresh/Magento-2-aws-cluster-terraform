@@ -155,7 +155,6 @@ opensearch_metric:
 
 aurora_create: true
 aurora:
-  allocated_storage: "120"
   storage_type: "gp3"
   storage_encrypted: true
   instance_class: "db.r6g.large"
