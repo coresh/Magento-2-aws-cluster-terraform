@@ -530,6 +530,7 @@ module "opensearch" {
   log_publishing_options = [
     { log_type = "INDEX_SLOW_LOGS" },
     { log_type = "SEARCH_SLOW_LOGS" },
+    { log_type = "ES_APPLICATION_LOGS" },
   ]
   ip_address_type = local.env.opensearch.ip_address_type
   software_update_options = {
