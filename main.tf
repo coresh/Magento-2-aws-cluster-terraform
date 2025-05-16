@@ -531,9 +531,9 @@ module "opensearch" {
     { log_type = "INDEX_SLOW_LOGS" },
     { log_type = "SEARCH_SLOW_LOGS" },
   ]
-  ip_address_type = "dualstack"
+  ip_address_type = local.env.opensearch.ip_address_type
   software_update_options = {
-    auto_software_update_enabled = false
+    auto_software_update_enabled = local.env.opensearch.auto_software_update_enabled
   }
   vpc_options = {
     subnet_ids = module.vpc.private_subnets
