@@ -605,13 +605,19 @@ module "aurora" {
   name            = "${local.project}-aurora-cluster"
   engine          = local.env.aurora.engine
   engine_version  = local.env.aurora.engine_version
-  manage_master_user_password          = false
-  manage_master_user_password_rotation = false
-  master_user_password_rotation_automatically_after_days = 30
+  manage_master_user_password          = local.env.aurora.manage_master_user_password
+  manage_master_user_password_rotation = local.env.aurora.manage_master_user_password_rotation
+  master_user_password_rotation_automatically_after_days = local.env.aurora.master_user_password_rotation_automatically_after_days
   master_username = random_string.aurora.result
   master_password = random_password.aurora.result
   vpc_id               = module.vpc.vpc_id
   availability_zones   = module.vpc.azs
+  instance_class = local.env.aurora.instance_class
+  instances = {
+    (${local.project}-instance-one) = {
+      publicly_accessible = false
+    }
+  }
   autoscaling_enabled      = local.env.aurora.autoscaling_enabled
   autoscaling_min_capacity = local.env.aurora.autoscaling_min_capacity
   autoscaling_max_capacity = local.env.aurora.autoscaling_max_capacity
@@ -630,9 +636,8 @@ module "aurora" {
   db_subnet_group_name = module.vpc.database_subnet_group_name
   enabled_cloudwatch_logs_exports = local.env.aurora.enabled_cloudwatch_logs_exports
   cluster_performance_insights_enabled          = local.env.aurora.cluster_performance_insights_enabled
-  cluster_performance_insights_retention_period = 31
+  cluster_performance_insights_retention_period = local.env.aurora.cluster_performance_insights_retention_period
   allocated_storage         = local.env.aurora.allocated_storage
-  db_cluster_instance_class = local.env.aurora.db_cluster_instance_class
   storage_type              = local.env.aurora.storage_type
   storage_encrypted         = local.env.aurora.storage_encrypted
   skip_final_snapshot = local.env.aurora.skip_final_snapshot
