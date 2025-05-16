@@ -559,14 +559,8 @@ module "opensearch" {
     {
     effect = "Allow"
     principals = [{
-      type        = "*"
-      identifiers = ["*"]
-    }]
-    actions = ["es:*"]
-    conditions = [{
-      test     = "IpAddress"
-      variable = "aws:SourceIp"
-      values   = [module.vpc.vpc_cidr_block]
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
     }]
     }
   ]
@@ -781,7 +775,7 @@ module "media_optimization_lambda_package" {
     npm_requirements = true
   }
   hash_extra     = ""
-  store_on_s3    = true
+  store_on_s3    = false
   s3_bucket      = module.s3["lambda"].s3_bucket_id
   s3_prefix      = "lambda-edge-media-optimization/"
   create_lambda_function_url = true
