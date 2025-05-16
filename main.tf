@@ -896,8 +896,8 @@ module "cloudfront" {
   origin_group = {
     media_optimization_group = {
       failover_status_codes      = local.env.cloudfront.failover_criteria_status_codes
-      primary_member_origin_id   = "media-optimized"
-      secondary_member_origin_id = "lambda-media-optimization"
+      primary_member_origin_id   = "s3_bucket_media_optimized"
+      secondary_member_origin_id = "lambda_media_optimization"
       origin_id                  = "media-optimization-group"
     }
   }
