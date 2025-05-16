@@ -1202,7 +1202,7 @@ module "ecs_service" {
   requires_compatibilities   = ["EC2"]
   capacity_provider_strategy = {
     frontend = {
-      capacity_provider = module.ecs_cluster.autoscaling_capacity_providers
+      capacity_provider = module.ecs_cluster.autoscaling_capacity_providers.name
       weight            = 1
       base              = 1
     }
