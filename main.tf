@@ -937,7 +937,6 @@ module "cloudfront" {
     compress                 = true
     }
 
-
   logging_config = {
     bucket = module.s3["logs"].s3_bucket_bucket_domain_name
     prefix = "cloudfront"
