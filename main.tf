@@ -1118,15 +1118,17 @@ module "autoscaling" {
   image_id         = data.aws_ami.this.id
   instance_type    = local.env.asg.instance_type
   security_groups  = [module.autoscaling_security_group.security_group_id]
-  user_data        = base64encode(<<-END
-        #!/bin/bash
-        cat <<'EOF' >> /etc/ecs/ecs.config
-        ECS_CLUSTER="${local.project}-ecs-cluster"
-        ECS_LOGLEVEL=debug
-        ECS_CONTAINER_INSTANCE_TAGS=${jsonencode("${local.project}")}
-        ECS_ENABLE_TASK_IAM_ROLE=true
-        EOF
-  END)
+  user_data        = base64encode(
+<<-END
+#!/bin/bash
+cat <<'EOF' >> /etc/ecs/ecs.config
+ECS_CLUSTER="${local.project}-ecs-cluster"
+ECS_LOGLEVEL=debug
+ECS_CONTAINER_INSTANCE_TAGS=${jsonencode("${local.project}")}
+ECS_ENABLE_TASK_IAM_ROLE=true
+EOF
+END
+)
   vpc_zone_identifier    = module.vpc.private_subnets
   health_check_type      = local.env.asg.health_check_type
   min_size               = local.env.asg.min_size
