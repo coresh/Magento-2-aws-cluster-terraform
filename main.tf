@@ -1223,7 +1223,7 @@ module "ecs_service" {
       image  = local.env.ecr.docker_image
       cpu    = local.env.ecs.container_cpu
       memory = local.env.ecs.container_memory
-      runtime_platform {
+      runtime_platform = {
         cpu_architecture = local.env.ecs.cpu_architecture
         operating_system_family = "LINUX"
       }
