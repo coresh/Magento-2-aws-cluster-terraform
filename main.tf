@@ -1197,7 +1197,7 @@ module "ecs_cluster" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "ecs_service" {
   source      = "terraform-aws-modules/ecs/aws//modules/service"
-  name        = local.name
+  name        = "${local.project}-ecs-service"
   cluster_arn = module.ecs_cluster.arn
   requires_compatibilities   = ["EC2"]
   capacity_provider_strategy = {
