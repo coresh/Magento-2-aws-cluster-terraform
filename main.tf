@@ -1121,12 +1121,22 @@ module "autoscaling" {
   user_data        = base64encode(
 <<-END
 #!/bin/bash
+# ecs cluster configuration
 cat <<'EOF' >> /etc/ecs/ecs.config
 ECS_CLUSTER="${local.project}-ecs-cluster"
 ECS_LOGLEVEL=debug
 ECS_CONTAINER_INSTANCE_TAGS=${jsonencode("${local.project}")}
 ECS_ENABLE_TASK_IAM_ROLE=true
 EOF
+# install ssm manager
+cd /tmp/
+wget -q https://s3.${data.aws_region.current.name}.amazonaws.com/amazon-ssm-${data.aws_region.current.name}/latest/debian_$(dpkg --print-architecture)/amazon-ssm-agent.deb
+dpkg -i amazon-ssm-agent.deb
+systemctl enable amazon-ssm-agent
+systemctl start amazon-ssm-agent
+echo "$(curl -Iv google.com)"
+echo "$(route)"
+echo "$(ip route show)"
 END
 )
   vpc_zone_identifier    = module.vpc.private_subnets
@@ -1231,7 +1241,7 @@ module "ecs_service" {
   }
   load_balancer = {
     service = {
-      target_group_arn = module.alb.target_groups[*].arn
+      target_group_arn = values(module.alb.target_groups)[0].arn
       container_name   = local.env.ecs.container_name
       container_port   = local.env.ecs.container_port
     }
