@@ -1295,7 +1295,7 @@ module "ecs_service" {
         },
         {
           name  = "DATABASE_NAME"
-          value = module.aurora.database_name
+          value = module.aurora.cluster_database_name
         },
         {
           name  = "DATABASE_USER"
