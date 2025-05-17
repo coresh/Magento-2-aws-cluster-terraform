@@ -585,7 +585,7 @@ module "aurora" {
   manage_master_user_password          = local.env.aurora.manage_master_user_password
   manage_master_user_password_rotation = local.env.aurora.manage_master_user_password_rotation
   master_user_password_rotation_automatically_after_days = local.env.aurora.master_user_password_rotation_automatically_after_days
-  master_username = random_string.aurora.result
+  master_username = replace(local.project, "-", "")
   master_password = random_password.aurora.result
   database_name   = replace(local.project, "-", "_")
   backup_retention_period = 7
@@ -1302,7 +1302,7 @@ module "ecs_service" {
         },
         {
           name  = "DATABASE_USER"
-          value = random_string.aurora.result
+          value = module.aurora.cluster_master_username
         },
         {
           name  = "DATABASE_PASSWORD"
