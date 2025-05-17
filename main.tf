@@ -1238,6 +1238,7 @@ module "ecs_service" {
   source      = "terraform-aws-modules/ecs/aws//modules/service"
   name        = "${local.project}-ecs-service"
   cluster_arn = module.ecs_cluster.arn
+  enable_execute_command     = true
   requires_compatibilities   = ["EC2"]
   capacity_provider_strategy = {
     frontend = {
@@ -1270,23 +1271,42 @@ module "ecs_service" {
       ]
       environment = [
         {
-          name  = "OPENSEARCH"
-          value = ""
+          name  = "OPENSEARCH_HOST"
+          value = module.opensearch.domain_endpoint
         },
         {
-          name  = "ELASTICACHE"
-          value = ""
+          name  = "OPENSEARCH_PASSWORD"
+          value = random_password.opensearch.result
         },
         {
-          name  = "DATABASE"
-          value = ""
+          name  = "OPENSEARCH_USER"
+          value = random_string.opensearch.result
         },
         {
-          name  = "DB_NAME"
-          value = ""
+          name  = "ELASTICACHE_HOST"
+          value = module.elasticache.replication_group_primary_endpoint_address
+        },
+        {
+          name  = "ELASTICACHE_PASSWORD"
+          value = random_password.elasticache.result
+        },
+        {
+          name  = "DATABASE_HOST"
+          value = module.aurora.cluster_endpoint
+        },
+        {
+          name  = "DATABASE_NAME"
+          value = module.aurora.database_name
+        },
+        {
+          name  = "DATABASE_USER"
+          value = random_string.aurora.result
+        },
+        {
+          name  = "DATABASE_PASSWORD"
+          value = random_password.aurora.result
         },
       ]
-      enable_execute_command                 = true
       readonly_root_filesystem               = true
       enable_cloudwatch_logging              = true
       create_cloudwatch_log_group            = true
