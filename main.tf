@@ -1104,13 +1104,13 @@ module "alb" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create Autoscaling group
 # # ---------------------------------------------------------------------------------------------------------------------#
-module "autoscaling" {
+module "autoscaling_ecs" {
   source           = "terraform-aws-modules/autoscaling/aws"
   version          = "8.3.0"
-  name             = "${local.project}-autoscaling"
+  name             = "${local.project}-ecs-autoscaling"
   image_id         = data.aws_ami.this.id
   instance_type    = local.env.asg.instance_type
-  security_groups  = [module.autoscaling_security_group.security_group_id]
+  security_groups  = [module.autoscaling_ecs_security_group.security_group_id]
   user_data        = base64encode(
 <<-END
 #!/bin/bash
@@ -1143,9 +1143,6 @@ wget -q https://s3.${data.aws_region.current.name}.amazonaws.com/amazon-ssm-${da
 dpkg -i amazon-ssm-agent.deb
 systemctl enable amazon-ssm-agent
 systemctl start amazon-ssm-agent
-echo "$(curl -Iv google.com)"
-echo "$(route)"
-echo "$(ip route show)"
 END
 )
   vpc_zone_identifier    = module.vpc.private_subnets
@@ -1186,11 +1183,11 @@ END
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create security group for Autoscaling group
 # # ---------------------------------------------------------------------------------------------------------------------#
-module "autoscaling_security_group" {
+module "autoscaling_ecs_security_group" {
   source      = "terraform-aws-modules/security-group/aws"
   version     = "5.3.0"
-  name        = "${local.project}-autoscaling-security-group"
-  description = "Autoscaling group security group"
+  name        = "${local.project}-ecs-autoscaling-security-group"
+  description = "Autoscaling ECS security group"
   vpc_id      = module.vpc.vpc_id
   computed_ingress_with_source_security_group_id = [{
       rule                     = "http-80-tcp"
@@ -1211,7 +1208,7 @@ module "ecs_cluster" {
   default_capacity_provider_use_fargate = false
   autoscaling_capacity_providers = {
     frontend = {
-      auto_scaling_group_arn         = module.autoscaling.autoscaling_group_arn
+      auto_scaling_group_arn         = module.autoscaling_ecs.autoscaling_group_arn
       managed_termination_protection = "ENABLED"
       managed_scaling = {
         maximum_scaling_step_size = 4
