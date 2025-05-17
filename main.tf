@@ -580,7 +580,6 @@ module "aurora" {
   name            = "${local.project}-aurora-cluster"
   engine          = local.env.aurora.engine
   engine_version  = local.env.aurora.engine_version
-  cluster_identifier = "${local.project}-aurora-cluster"
   manage_master_user_password          = local.env.aurora.manage_master_user_password
   manage_master_user_password_rotation = local.env.aurora.manage_master_user_password_rotation
   master_user_password_rotation_automatically_after_days = local.env.aurora.master_user_password_rotation_automatically_after_days
