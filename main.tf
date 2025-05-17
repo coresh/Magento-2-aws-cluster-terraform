@@ -1282,8 +1282,12 @@ module "ecs_service" {
           value = random_string.opensearch.result
         },
         {
-          name  = "ELASTICACHE_HOST"
-          value = module.elasticache.replication_group_primary_endpoint_address
+          name  = "ELASTICACHE_SESSION_HOST"
+          value = module.elasticache["session"].replication_group_primary_endpoint_address
+        },
+        {
+          name  = "ELASTICACHE_CACHE_HOST"
+          value = module.elasticache["cache"].replication_group_primary_endpoint_address
         },
         {
           name  = "ELASTICACHE_PASSWORD"
