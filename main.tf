@@ -437,6 +437,8 @@ resource "random_password" "opensearch" {
   length           = 16
   lower            = true
   upper            = true
+  min_lower        = 1
+  min_upper        = 1
   numeric          = true
   special          = true
   override_special = "!&#$"
@@ -1114,12 +1116,9 @@ module "autoscaling" {
 #!/bin/bash
 # ecs cluster configuration
 mkdir -p /etc/ecs
-cat <<'EOF' >> /etc/ecs/ecs.config
-ECS_CLUSTER="${local.project}-ecs-cluster"
-ECS_LOGLEVEL=debug
-ECS_CONTAINER_INSTANCE_TAGS='{"Name":"${local.project}"}'
-ECS_ENABLE_TASK_IAM_ROLE=true
-EOF
+echo "ECS_CLUSTER=${local.project}-ecs-cluster" > /etc/ecs/ecs.config
+echo "ECS_LOGLEVEL=debug" >> /etc/ecs/ecs.config
+echo "ECS_ENABLE_TASK_IAM_ROLE=true" >> /etc/ecs/ecs.config
 # install docker
 apt update
 apt -yq install ca-certificates curl
