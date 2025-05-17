@@ -1115,7 +1115,7 @@ module "autoscaling" {
 # ecs cluster configuration
 mkdir -p /etc/ecs
 cat <<'EOF' >> /etc/ecs/ecs.config
-ECS_CLUSTER="${module.ecs_cluster.cluster_name}"
+ECS_CLUSTER="${local.project}-ecs-cluster"
 ECS_LOGLEVEL=debug
 ECS_CONTAINER_INSTANCE_TAGS='{"Name":"${local.project}"}'
 ECS_ENABLE_TASK_IAM_ROLE=true
