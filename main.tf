@@ -591,7 +591,6 @@ module "aurora" {
   backup_retention_period = 7
   preferred_backup_window = "02:00-05:00"
   vpc_id               = module.vpc.vpc_id
-  availability_zones   = module.vpc.azs
   instance_class = local.env.aurora.instance_class
   instances = {
     instance-one = {
