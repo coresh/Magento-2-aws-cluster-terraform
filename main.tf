@@ -566,7 +566,7 @@ resource "random_password" "aurora" {
 # Generate random name for aurora master user
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_string" "aurora" {
-  length         = 7
+  length         = 8
   lower          = true
   numeric        = false
   special        = false
@@ -838,15 +838,15 @@ module "cloudfront" {
    }
    ]
    
-    default_cache_behavior = {
-    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${local.project}-alb-vpc-origin"
-    origin_request_policy_id = "216adef6-5c7f-47e4-b989-5492eafa07d3"
-    cache_policy_id          = "658327ea-f89d-4fab-a63d-7e88639e58f6"
-    viewer_protocol_policy   = "https-only"
-    compress                 = true
-    }
+   default_cache_behavior = {
+     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+     cached_methods   = ["GET", "HEAD"]
+     target_origin_id = "${local.project}-alb-vpc-origin"
+     origin_request_policy_id = "216adef6-5c7f-47e4-b989-5492eafa07d3"
+     cache_policy_id          = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+     viewer_protocol_policy   = "https-only"
+     compress                 = true
+  }
 
   logging_config = {
     bucket = module.s3["logs"].s3_bucket_bucket_domain_name
