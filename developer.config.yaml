@@ -328,6 +328,7 @@ ecs:
   cluster_memory: 4096
   container_cpu: 1024
   container_memory: 2058
+  cpu_architecture: "ARM64"
 
 waf:
   restricted_countries: [CN, RU, IR, KP, SD, SY, CU]
