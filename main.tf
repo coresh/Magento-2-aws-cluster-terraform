@@ -1226,6 +1226,27 @@ module "ecs_cluster" {
 /////////////////////////////////////////////////////[ ECS CLUSTER MODULE ]///////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create ECS Service CloudMap discovery
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_service_discovery_private_dns_namespace" "ecs_service" {
+  name        = "${local.env.brand}.internal"
+  vpc         = module.vpc.vpc_id
+  description = "Private DNS namespace for ${local.project}"
+}
+resource "aws_service_discovery_service" "ecs_service" {
+  name = "ecs_service"
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.ecs_service.id
+    dns_records {
+      type = "A"
+      ttl  = 10
+    }
+  }
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create ECS Service configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "ecs_service" {
@@ -1247,6 +1268,9 @@ module "ecs_service" {
   }
   cpu    = local.env.ecs.cluster_cpu
   memory = local.env.ecs.cluster_memory
+  service_registries = [{
+    registry_arn = aws_service_discovery_service.ecs_service.arn
+  }]
   container_definitions = {
     (local.env.ecs.container_name) = {
       image  = local.env.ecr.docker_image
