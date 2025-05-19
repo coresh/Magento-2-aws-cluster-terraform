@@ -1228,15 +1228,19 @@ module "ecs_cluster" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create ECS Service CloudMap discovery
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_service_discovery_private_dns_namespace" "ecs_service" {
+resource "aws_service_discovery_http_namespace" "ecs" {
+  name        = "${local.brand}.ecs"
+  description = "CloudMap namespace for ${local.project}"
+}
+resource "aws_service_discovery_private_dns_namespace" "service" {
   name        = "${local.env.brand}.internal"
   vpc         = module.vpc.vpc_id
   description = "Private DNS namespace for ${local.project}"
 }
-resource "aws_service_discovery_service" "ecs_service" {
-  name = "ecs_service"
+resource "aws_service_discovery_service" "service" {
+  name = "service"
   dns_config {
-    namespace_id = aws_service_discovery_private_dns_namespace.ecs_service.id
+    namespace_id = aws_service_discovery_private_dns_namespace.service.id
     dns_records {
       type = "A"
       ttl  = 10
@@ -1270,7 +1274,7 @@ module "ecs_service" {
   cpu    = local.env.ecs.cluster_cpu
   memory = local.env.ecs.cluster_memory
   service_connect_configuration = {
-    namespace = aws_service_discovery_http_namespace.ecs_service.arn
+    namespace = aws_service_discovery_http_namespace.ecs.arn
     service = {
       client_alias = {
         port     = local.env.ecs.container_port
