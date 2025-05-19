@@ -1269,8 +1269,16 @@ module "ecs_service" {
   }
   cpu    = local.env.ecs.cluster_cpu
   memory = local.env.ecs.cluster_memory
-  service_registries = {
-    registry_arn = aws_service_discovery_service.ecs_service.arn
+  service_connect_configuration = {
+    namespace = aws_service_discovery_http_namespace.ecs_service.arn
+    service = {
+      client_alias = {
+        port     = local.env.ecs.container_port
+        dns_name = local.env.ecs.container_name
+      }
+      port_name      = local.env.ecs.container_name
+      discovery_name = local.env.ecs.container_name
+    }
   }
   runtime_platform = {
         cpu_architecture = local.env.ecs.cpu_architecture
