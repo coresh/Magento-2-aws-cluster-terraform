@@ -1241,6 +1241,7 @@ resource "aws_service_discovery_service" "ecs_service" {
       type = "A"
       ttl  = 10
     }
+   routing_policy = "MULTIVALUE"
   }
   health_check_custom_config {
     failure_threshold = 1
@@ -1268,18 +1269,18 @@ module "ecs_service" {
   }
   cpu    = local.env.ecs.cluster_cpu
   memory = local.env.ecs.cluster_memory
-  service_registries = [{
+  service_registries = {
     registry_arn = aws_service_discovery_service.ecs_service.arn
-  }]
+  }
+  runtime_platform = {
+        cpu_architecture = local.env.ecs.cpu_architecture
+        operating_system_family = "LINUX"
+  }
   container_definitions = {
     (local.env.ecs.container_name) = {
       image  = local.env.ecr.docker_image
       cpu    = local.env.ecs.container_cpu
       memory = local.env.ecs.container_memory
-      runtime_platform = {
-        cpu_architecture = local.env.ecs.cpu_architecture
-        operating_system_family = "LINUX"
-      }
       port_mappings = [
         {
           name          = local.env.ecs.container_name
