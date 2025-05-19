@@ -1229,7 +1229,7 @@ module "ecs_cluster" {
 # Create ECS Service CloudMap discovery
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_service_discovery_http_namespace" "ecs" {
-  name        = "${local.brand}.ecs"
+  name        = "${local.env.brand}.ecs"
   description = "CloudMap namespace for ${local.project}"
 }
 resource "aws_service_discovery_private_dns_namespace" "service" {
