@@ -549,12 +549,12 @@ module "opensearch" {
 ]
 }
 
-////////////////////////////////////////////////////////[ AURORA MODULE ]/////////////////////////////////////////////////
+/////////////////////////////////////////////////////[ AURORA RDS MODULE ]////////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Generate random passwords for aurora master user
+# Generate random passwords for database master user
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "random_password" "aurora" {
+resource "random_password" "database" {
   length           = 16
   lower            = true
   upper            = true
@@ -586,7 +586,7 @@ module "aurora" {
   manage_master_user_password_rotation = local.env.aurora.manage_master_user_password_rotation
   master_user_password_rotation_automatically_after_days = local.env.aurora.master_user_password_rotation_automatically_after_days
   master_username = replace(local.project, "-", "")
-  master_password = random_password.aurora.result
+  master_password = random_password.database.result
   database_name   = replace(local.project, "-", "_")
   backup_retention_period = 7
   preferred_backup_window = "02:00-05:00"
@@ -1303,7 +1303,7 @@ module "ecs_service" {
       environment = [
         {
           name  = "OPENSEARCH_HOST"
-          value = module.opensearch.domain_endpoint
+          value = try(module.opensearch.domain_endpoint, "opensearch.${local.env.brand}.internal", "empty")
         },
         {
           name  = "OPENSEARCH_PASSWORD"
@@ -1315,11 +1315,11 @@ module "ecs_service" {
         },
         {
           name  = "ELASTICACHE_SESSION_HOST"
-          value = module.elasticache["session"].replication_group_primary_endpoint_address
+          value = try(module.elasticache["session"].replication_group_primary_endpoint_address, "redis.${local.env.brand}.internal", "empty")
         },
         {
           name  = "ELASTICACHE_CACHE_HOST"
-          value = module.elasticache["cache"].replication_group_primary_endpoint_address
+          value = try(module.elasticache["cache"].replication_group_primary_endpoint_address, "redis.${local.env.brand}.internal", "empty")
         },
         {
           name  = "ELASTICACHE_PASSWORD"
@@ -1327,19 +1327,19 @@ module "ecs_service" {
         },
         {
           name  = "DATABASE_HOST"
-          value = module.aurora.cluster_endpoint
+          value = try(module.aurora.cluster_endpoint, module.rds.db_instance_endpoint, "empty")
         },
         {
           name  = "DATABASE_NAME"
-          value = module.aurora.cluster_database_name
+          value = try(module.aurora.cluster_database_name,module.rds.db_instance_name, "empty")
         },
         {
           name  = "DATABASE_USER"
-          value = module.aurora.cluster_master_username
+          value = try(module.aurora.cluster_master_username, module.rds.db_instance_username, "empty")
         },
         {
           name  = "DATABASE_PASSWORD"
-          value = random_password.aurora.result
+          value = random_password.database.result
         },
       ]
       readonly_root_filesystem               = true
