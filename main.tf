@@ -1228,16 +1228,12 @@ module "ecs_cluster" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create ECS Service CloudMap discovery
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_service_discovery_http_namespace" "ecs" {
-  name        = "${local.env.brand}.ecs"
-  description = "CloudMap namespace for ${local.project}"
-}
-resource "aws_service_discovery_private_dns_namespace" "service" {
+resource "aws_service_discovery_private_dns_namespace" "this" {
   name        = "${local.env.brand}.internal"
   vpc         = module.vpc.vpc_id
   description = "Private DNS namespace for ${local.project}"
 }
-resource "aws_service_discovery_service" "service" {
+resource "aws_service_discovery_service" "this" {
   name = "service"
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.service.id
@@ -1273,20 +1269,14 @@ module "ecs_service" {
   }
   cpu    = local.env.ecs.cluster_cpu
   memory = local.env.ecs.cluster_memory
-  service_connect_configuration = {
-    namespace = aws_service_discovery_http_namespace.ecs.arn
-    service = {
-      client_alias = {
-        port     = local.env.ecs.container_port
-        dns_name = local.env.ecs.container_name
-      }
-      port_name      = local.env.ecs.container_name
-      discovery_name = local.env.ecs.container_name
-    }
+  service_registries = {
+      container_name = local.env.ecs.container_name
+      container_port = local.env.ecs.container_port
+      registry_arn   = aws_service_discovery_service.this.arn
   }
   runtime_platform = {
-        cpu_architecture = local.env.ecs.cpu_architecture
-        operating_system_family = "LINUX"
+      cpu_architecture = local.env.ecs.cpu_architecture
+      operating_system_family = "LINUX"
   }
   container_definitions = {
     (local.env.ecs.container_name) = {
