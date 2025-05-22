@@ -6,7 +6,7 @@
 # Create RDS Instance database
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "rds" { 
-  create                = local.env.rds_create
+  create_db_instance    = local.env.rds_create
   source                = "terraform-aws-modules/rds/aws"
   version               = "6.12.0"
   identifier            = "${local.project}-rds-instance"
