@@ -56,7 +56,7 @@ module "aurora" {
   iam_role_name                 = "${local.project}-aurora-monitor"
   iam_role_use_name_prefix      = true
   iam_role_description          = "${local.project} RDS enhanced monitoring IAM role"
-  iam_role_path                 = "/autoscaling/"
+  iam_role_path                 = "/monitoring/"
   iam_role_max_session_duration = 7200
   security_group_name  = "${local.project}-aurora-cluster"
   security_group_rules = {
