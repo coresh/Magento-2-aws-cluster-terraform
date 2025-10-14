@@ -41,7 +41,7 @@ resource "aws_cloudfront_response_headers_policy" "media" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "cloudfront" {
   source              = "terraform-aws-modules/cloudfront/aws"
-  version             = "4.1.0"
+  version             = "5.0.0"
   aliases             = concat(compact(local.env.aliases))
   comment             = "${local.env.domain} media and static files"
   enabled             = true
