@@ -7,8 +7,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "ecs_cluster" {
   source       = "terraform-aws-modules/ecs/aws//modules/cluster"
-  cluster_name = "${local.project}-ecs-cluster"
-  default_capacity_provider_use_fargate = false
+  name = "${local.project}-ecs-cluster"
   autoscaling_capacity_providers = {
     frontend = {
       auto_scaling_group_arn         = module.autoscaling_ecs.autoscaling_group_arn
@@ -154,7 +153,7 @@ module "ecs_service" {
     }
   }
   subnet_ids = module.vpc.private_subnets
-  security_group_rules = {
+  security_group_ingress_rules = {
     alb_http_ingress = {
       type                     = "ingress"
       from_port                = local.env.ecs.container_port
