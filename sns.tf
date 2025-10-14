@@ -7,7 +7,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "sns" {
   source   = "terraform-aws-modules/sns/aws"
-  version  = "6.1.3"
+  version  = "6.2.0"
   for_each = local.env.sns.topic
   name     = "${local.project}-${each.key}"
   subscriptions = {
