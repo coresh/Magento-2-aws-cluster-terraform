@@ -7,7 +7,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "media_optimization_lambda_package" {
   source         = "terraform-aws-modules/lambda/aws"
-  version        = "7.20.2"
+  version        = "8.1.0"
   providers      = { aws = aws.us-east-1 }
   function_name  = "${local.project}-media-optimization"
   description    = "Lambda@Edge function to optimize media before cloudfront"
