@@ -9,11 +9,12 @@
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "10.0.0"
-  name                      = "${local.project}-alb"
-  internal                  = true
-  vpc_id                    = module.vpc.vpc_id
-  subnets                   = module.vpc.private_subnets
-  enable_deletion_protection = local.env.alb.enable_deletion_protection
+  name                       = "${local.project}-alb"
+  internal                   = true
+  vpc_id                     = module.vpc.vpc_id
+  subnets                    = module.vpc.private_subnets
+  enable_deletion_protection  = local.env.alb.enable_deletion_protection
+  client_keep_alive           = 300
 
   security_group_ingress_rules = {
     http = {
@@ -69,15 +70,14 @@ module "alb" {
     http = {
       port     = 80
       protocol = "HTTP"
-
-      default_action = [{
+      default_action = {
         type = "redirect"
         redirect = {
           port        = "443"
           protocol    = "HTTPS"
           status_code = "HTTP_301"
         }
-      }]
+      }
     }
 
     https = {
@@ -86,33 +86,31 @@ module "alb" {
       ssl_policy      = local.env.alb.ssl_policy
       certificate_arn = module.acm.acm_certificate_arn
 
-      default_action = [{
+      default_action = {
         type = "fixed-response"
         fixed_response = {
           content_type = "text/plain"
           message_body = local.env.alb.fixed_response.message_body
           status_code  = local.env.alb.fixed_response.status_code
         }
-      }]
+      }
 
       rules = {
         frontend = {
           priority = 30
-          actions = [{
-            forward = {
-              target_groups = [{
-                target_group_key = "frontend"
-              }]
-            }
-          }]
-          conditions = [
+          actions = [
             {
-              host_header = { values = [local.env.domain] }
-            },
+              forward = {
+                target_group_key = "frontend"
+              }
+            }
+          ]
+          conditions = [
+            { host_header = { values = [local.env.domain] } },
             {
               http_header = {
                 http_header_name = "X-${title(local.env.brand)}-Secret"
-                values = [random_uuid.secret_header.result]
+                values           = [random_uuid.secret_header.result]
               }
             }
           ]
