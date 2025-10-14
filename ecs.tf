@@ -154,12 +154,11 @@ module "ecs_service" {
   subnet_ids = module.vpc.private_subnets
   security_group_ingress_rules = {
     alb_http_ingress = {
-      type                     = "ingress"
-      from_port                = local.env.ecs.container_port
-      to_port                  = local.env.ecs.container_port
-      protocol                 = "tcp"
-      description              = "Service port"
-      source_security_group_id = module.alb.security_group_id
+      from_port                    = local.env.ecs.container_port
+      to_port                      = local.env.ecs.container_port
+      ip_protocol                  = "tcp"
+      description                  = "Service port"
+      referenced_security_group_id = module.alb.security_group_id
     }
   }
 }
