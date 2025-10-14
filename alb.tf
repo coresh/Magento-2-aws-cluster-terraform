@@ -15,9 +15,8 @@ module "alb" {
   subnets            = module.vpc.private_subnets
   enable_deletion_protection = local.env.alb.enable_deletion_protection
 
-  security_group_rules = {
+  security_group_ingress_rules = {
     ingress_http = {
-      type        = "ingress"
       from_port   = 80
       to_port     = 80
       protocol    = "tcp"
@@ -25,15 +24,15 @@ module "alb" {
       description = "Allow HTTP"
     }
     ingress_https = {
-      type        = "ingress"
       from_port   = 443
       to_port     = 443
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
       description = "Allow HTTPS"
     }
+}
+security_group_egress_rules {
     egress_all = {
-      type        = "egress"
       from_port   = 0
       to_port     = 0
       protocol    = "-1"
