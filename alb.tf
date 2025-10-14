@@ -7,7 +7,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "alb" {
   source   = "terraform-aws-modules/alb/aws"
-  version  = "9.16.0"
+  version  = "10.0.0"
   internal = true
   name     = "${local.project}-alb"
   vpc_id   = module.vpc.vpc_id
