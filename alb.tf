@@ -19,15 +19,15 @@ module "alb" {
     ingress_http = {
       from_port   = 80
       to_port     = 80
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      ip_protocol    = "tcp"
+      cidr_ipv4 = "0.0.0.0/0"
       description = "Allow HTTP"
     }
     ingress_https = {
       from_port   = 443
       to_port     = 443
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      ip_protocol    = "tcp"
+      cidr_ipv4 = "0.0.0.0/0"
       description = "Allow HTTPS"
     }
 }
@@ -35,8 +35,8 @@ security_group_egress_rules = {
     egress_all = {
       from_port   = 0
       to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = [module.vpc.vpc_cidr_block]
+      ip_protocol    = "-1"
+      cidr_ipv4 = module.vpc.vpc_cidr_block
       description = "Allow all outbound"
     }
   }
