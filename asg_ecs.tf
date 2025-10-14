@@ -7,7 +7,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "autoscaling_ecs" {
   source           = "terraform-aws-modules/autoscaling/aws"
-  version          = "8.3.0"
+  version          = "9.0.1"
   name             = "${local.project}-ecs-autoscaling"
   image_id         = data.aws_ami.this.id
   instance_type    = local.env.asg.instance_type
@@ -34,13 +34,13 @@ apt update
 apt -yq install docker-ce docker-ce-cli containerd.io
 # install ecs agent
 cd /tmp/
-curl -O https://s3.${data.aws_region.current.name}.amazonaws.com/amazon-ecs-agent-${data.aws_region.current.name}/amazon-ecs-init-latest.$(dpkg --print-architecture).deb
+curl -O https://s3.${data.aws_region.current.region}.amazonaws.com/amazon-ecs-agent-${data.aws_region.current.region}/amazon-ecs-init-latest.$(dpkg --print-architecture).deb
 dpkg -i amazon-ecs-init-latest.$(dpkg --print-architecture).deb
 systemctl enable ecs
 systemctl start ecs
 # install ssm manager
 cd /tmp/
-wget -q https://s3.${data.aws_region.current.name}.amazonaws.com/amazon-ssm-${data.aws_region.current.name}/latest/debian_$(dpkg --print-architecture)/amazon-ssm-agent.deb
+wget -q https://s3.${data.aws_region.current.region}.amazonaws.com/amazon-ssm-${data.aws_region.current.region}/latest/debian_$(dpkg --print-architecture)/amazon-ssm-agent.deb
 dpkg -i amazon-ssm-agent.deb
 systemctl enable amazon-ssm-agent
 systemctl start amazon-ssm-agent
