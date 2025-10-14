@@ -19,7 +19,7 @@ resource "random_password" "elasticache" {
 module "elasticache" {
   create                     = local.env.elasticache_create
   source                     = "terraform-aws-modules/elasticache/aws"
-  version                    = "1.6.0"
+  version                    = "1.10.2"
   for_each                   = local.env.elasticache
   replication_group_id       = "${local.project}-${each.key}-backend"
   engine_version             = "7.1"
