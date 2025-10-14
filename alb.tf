@@ -9,12 +9,12 @@
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "10.0.0"
-  name                       = "${local.project}-alb"
-  internal                   = true
-  vpc_id                     = module.vpc.vpc_id
-  subnets                    = module.vpc.private_subnets
-  enable_deletion_protection  = local.env.alb.enable_deletion_protection
-  client_keep_alive           = 300
+  name                      = "${local.project}-alb"
+  internal                  = true
+  vpc_id                    = module.vpc.vpc_id
+  subnets                   = module.vpc.private_subnets
+  enable_deletion_protection = local.env.alb.enable_deletion_protection
+  client_keep_alive          = 300
 
   security_group_ingress_rules = {
     http = {
@@ -72,6 +72,7 @@ module "alb" {
       protocol = "HTTP"
       default_action = {
         type = "redirect"
+        order = 1
         redirect = {
           port        = "443"
           protocol    = "HTTPS"
@@ -85,19 +86,16 @@ module "alb" {
       protocol        = "HTTPS"
       ssl_policy      = local.env.alb.ssl_policy
       certificate_arn = module.acm.acm_certificate_arn
-
       default_action = {
-        type = "fixed-response"
-        fixed_response = {
-          content_type = "text/plain"
-          message_body = local.env.alb.fixed_response.message_body
-          status_code  = local.env.alb.fixed_response.status_code
+        type  = "forward"
+        order = 1
+        forward = {
+          target_group_key = "frontend"
         }
       }
-
       rules = {
         frontend = {
-          priority = 30
+          priority = 2
           actions = [
             {
               forward = {
