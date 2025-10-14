@@ -31,7 +31,7 @@ resource "random_string" "opensearch" {
 module "opensearch" {
   create           = local.env.opensearch_create
   source           = "terraform-aws-modules/opensearch/aws"
-  version          = "1.7.0"
+  version          = "2.2.0"
   domain_name      = "${local.project}-opensearch"
   engine_version   = local.env.opensearch.engine_version
   advanced_options = {
