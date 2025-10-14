@@ -69,15 +69,16 @@ module "alb" {
         content_type = "text/plain"
         message_body = local.env.alb.fixed_response.message_body
         status_code  = local.env.alb.fixed_response.status_code
-        order = 1
       }
       rules = {
         frontend = {
           priority = 30
           actions = [{
-            type             = "forward"
-            target_group_key = "frontend"
-            order = 1
+            forward = {
+              target_groups = [{
+                target_group_key = "frontend"
+            }]
+           }
           }]
           conditions = [{
             host_header = {
