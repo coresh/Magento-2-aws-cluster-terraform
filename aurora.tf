@@ -19,7 +19,7 @@ resource "random_password" "database" {
 module "aurora" {
   create          = local.env.aurora_create
   source          = "terraform-aws-modules/rds-aurora/aws"
-  version         = "9.13.0"
+  version         = "9.16.0"
   name            = "${local.project}-aurora-cluster"
   engine          = local.env.aurora.engine
   engine_version  = local.env.aurora.engine_version
