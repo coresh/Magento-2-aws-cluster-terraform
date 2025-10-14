@@ -9,11 +9,12 @@
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "10.0.0"
-  name               = "${local.project}-alb"
-  internal           = true
-  vpc_id             = module.vpc.vpc_id
-  subnets            = module.vpc.private_subnets
-  enable_deletion_protection = local.env.alb.enable_deletion_protection
+
+  name                       = "${local.project}-alb"
+  internal                   = true
+  vpc_id                     = module.vpc.vpc_id
+  subnets                    = module.vpc.private_subnets
+  enable_deletion_protection  = local.env.alb.enable_deletion_protection
 
   security_group_ingress_rules = {
     ingress_http = {
@@ -30,11 +31,12 @@ module "alb" {
       cidr_ipv4   = "0.0.0.0/0"
       description = "Allow HTTPS"
     }
-}
-security_group_egress_rules = {
+  }
+
+  security_group_egress_rules = {
     egress_all = {
       ip_protocol = "-1"
-      cidr_ipv4   = module.vpc.vpc_cidr_block
+      cidr_ipv4   = "0.0.0.0/0"
       description = "Allow all outbound"
     }
   }
@@ -68,14 +70,14 @@ security_group_egress_rules = {
     http = {
       port     = 80
       protocol = "HTTP"
-      default_action = {
+      default_actions = [{
         type = "redirect"
         redirect = {
           port        = "443"
           protocol    = "HTTPS"
           status_code = "HTTP_301"
         }
-      }
+      }]
     }
 
     https = {
@@ -84,14 +86,14 @@ security_group_egress_rules = {
       ssl_policy      = local.env.alb.ssl_policy
       certificate_arn = module.acm.acm_certificate_arn
 
-      default_action = {
+      default_actions = [{
         type = "fixed-response"
         fixed_response = {
           content_type = "text/plain"
           message_body = local.env.alb.fixed_response.message_body
           status_code  = local.env.alb.fixed_response.status_code
         }
-      }
+      }]
 
       rules = {
         frontend = {
