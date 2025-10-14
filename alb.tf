@@ -31,7 +31,7 @@ module "alb" {
       description = "Allow HTTPS"
     }
 }
-security_group_egress_rules {
+security_group_egress_rules = {
     egress_all = {
       from_port   = 0
       to_port     = 0
