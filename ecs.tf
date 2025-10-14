@@ -120,15 +120,15 @@ module "ecs_service" {
         },
         {
           name  = "DATABASE_HOST"
-          value = try(module.aurora.cluster_endpoint, module.rds.db_instance_endpoint, "empty")
+          value = try(module.aurora.cluster_endpoint, "empty")
         },
         {
           name  = "DATABASE_NAME"
-          value = try(module.aurora.cluster_database_name,module.rds.db_instance_name, "empty")
+          value = try(module.aurora.cluster_database_name, "empty")
         },
         {
           name  = "DATABASE_USER"
-          value = try(module.aurora.cluster_master_username, module.rds.db_instance_username, "empty")
+          value = try(module.aurora.cluster_master_username, "empty")
         },
         {
           name  = "DATABASE_PASSWORD"
