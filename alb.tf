@@ -9,22 +9,21 @@
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "10.0.0"
-
-  name                       = "${local.project}-alb"
-  internal                   = true
-  vpc_id                     = module.vpc.vpc_id
-  subnets                    = module.vpc.private_subnets
-  enable_deletion_protection  = local.env.alb.enable_deletion_protection
+  name                      = "${local.project}-alb"
+  internal                  = true
+  vpc_id                    = module.vpc.vpc_id
+  subnets                   = module.vpc.private_subnets
+  enable_deletion_protection = local.env.alb.enable_deletion_protection
 
   security_group_ingress_rules = {
-    ingress_http = {
+    http = {
       from_port   = 80
       to_port     = 80
       ip_protocol = "tcp"
       cidr_ipv4   = "0.0.0.0/0"
       description = "Allow HTTP"
     }
-    ingress_https = {
+    https = {
       from_port   = 443
       to_port     = 443
       ip_protocol = "tcp"
@@ -34,7 +33,7 @@ module "alb" {
   }
 
   security_group_egress_rules = {
-    egress_all = {
+    all = {
       ip_protocol = "-1"
       cidr_ipv4   = "0.0.0.0/0"
       description = "Allow all outbound"
@@ -70,7 +69,8 @@ module "alb" {
     http = {
       port     = 80
       protocol = "HTTP"
-      default_actions = [{
+
+      default_action = [{
         type = "redirect"
         redirect = {
           port        = "443"
@@ -86,7 +86,7 @@ module "alb" {
       ssl_policy      = local.env.alb.ssl_policy
       certificate_arn = module.acm.acm_certificate_arn
 
-      default_actions = [{
+      default_action = [{
         type = "fixed-response"
         fixed_response = {
           content_type = "text/plain"
@@ -99,9 +99,10 @@ module "alb" {
         frontend = {
           priority = 30
           actions = [{
-            type = "forward"
             forward = {
-              target_group_key = "frontend"
+              target_groups = [{
+                target_group_key = "frontend"
+              }]
             }
           }]
           conditions = [
