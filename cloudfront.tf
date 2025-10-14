@@ -101,7 +101,7 @@ module "cloudfront" {
     }
     origin_shield = {
         enabled               = local.env.cloudfront.origin_shield_enabled
-        origin_shield_region  = data.aws_region.current.name
+        origin_shield_region  = data.aws_region.current.region
       }
     }
     alb_vpc_origin = {
