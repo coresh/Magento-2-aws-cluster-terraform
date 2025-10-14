@@ -7,7 +7,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 locals {
   # Are we in us-east-1?
-  use_us_east_1 = data.aws_region.current.name != "us-east-1"
+  use_us_east_1 = data.aws_region.current.region != "us-east-1"
 
   # Cloudwatch metrics alarm for resources
   metric_alarm = merge(local.env.elasticache_metric, local.env.opensearch_metric, local.env.aurora_metric)
