@@ -140,6 +140,7 @@ module "cloudfront" {
     cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6"
     viewer_protocol_policy     = "https-only"
     compress                   = false
+	use_forwarded_values       = false
    },
    {
     path_pattern     = "admin_*"
@@ -150,6 +151,7 @@ module "cloudfront" {
     cache_policy_id            = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
     viewer_protocol_policy     = "https-only"
     compress                   = true
+	use_forwarded_values       = false
    }
    ]
    
@@ -161,6 +163,7 @@ module "cloudfront" {
      cache_policy_id          = "658327ea-f89d-4fab-a63d-7e88639e58f6"
      viewer_protocol_policy   = "https-only"
      compress                 = true
+	 use_forwarded_values     = false
   }
 
   logging_config = {

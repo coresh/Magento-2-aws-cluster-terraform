@@ -6,9 +6,9 @@
 # Create RDS Instance database
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "rds" { 
-  create_db_instance    = local.env.rds_create
+  create_db_instance    = local.env.rds.create
   source                = "terraform-aws-modules/rds/aws"
-  version               = "6.12.0"
+  version               = "6.13.0"
   identifier            = "${local.project}-rds-instance"
   engine                = local.env.rds.engine
   engine_version        = local.env.rds.engine_version
@@ -20,19 +20,15 @@ module "rds" {
   manage_master_user_password          = local.env.rds.manage_master_user_password
   manage_master_user_password_rotation = local.env.rds.manage_master_user_password_rotation
   master_user_password_rotation_automatically_after_days = local.env.rds.master_user_password_rotation_automatically_after_days
-  db_name  = replace(local.project, "-", "_")
-  username = replace(local.project, "-", "")
+  db_name  = local.env.brand
+  username = local.env.brand
   password = random_password.database.result
   port     = local.env.rds.port
   db_subnet_group_name   = module.vpc.database_subnet_group_name
   vpc_security_group_ids = [module.security_group.security_group_id]
   multi_az               = local.env.rds.multi_az
-  create_db_option_group = true
-  option_group_name      = "${local.project}-rds-options"
-  create_db_parameter_group = true
-  parameter_group_name      = "${local.project}-rds-parameters"
-  maintenance_window              = "Sun:02:00-Sun:05:00"
-  backup_window                   = "03:00-06:00"
+  maintenance_window              = local.env.rds.maintenance_window
+  backup_window                   = local.env.rds.backup_window
   enabled_cloudwatch_logs_exports = local.env.rds.enabled_cloudwatch_logs_exports
   create_cloudwatch_log_group           = local.env.rds.create_cloudwatch_log_group
   skip_final_snapshot                   = local.env.rds.skip_final_snapshot
@@ -41,6 +37,10 @@ module "rds" {
   performance_insights_retention_period = local.env.rds.performance_insights_retention_period
   create_monitoring_role                = local.env.rds.create_monitoring_role
   monitoring_interval                   = local.env.rds.monitoring_interval
+  create_db_option_group    = true
+  option_group_name         = "${local.project}-rds-options"
+  create_db_parameter_group = true
+  parameter_group_name      = "${local.project}-rds-parameters"
   parameters = [
     for name, value in local.env.rds.parameters : {
       name         = name
@@ -58,8 +58,8 @@ module "security_group" {
   vpc_id      = module.vpc.vpc_id
   ingress_with_cidr_blocks = [
     {
-      from_port   = local.env.rds.
-      to_port     = local.env.rds.
+      from_port   = local.env.rds.port
+      to_port     = local.env.rds.port
       protocol    = "tcp"
       description = "MySQL access from within VPC"
       cidr_blocks = module.vpc.vpc_cidr_block

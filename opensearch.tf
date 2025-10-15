@@ -29,7 +29,7 @@ resource "random_string" "opensearch" {
 # Create Opensearch cluster
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "opensearch" {
-  create           = local.env.opensearch_create
+  create           = local.env.opensearch.create
   source           = "terraform-aws-modules/opensearch/aws"
   version          = "2.2.0"
   domain_name      = "${local.project}-opensearch"

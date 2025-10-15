@@ -7,7 +7,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "acm" {
   source                    = "terraform-aws-modules/acm/aws"
-  version                   = "5.1.1"
+  version                   = "6.1.0"
   domain_name               = local.env.domain
   validation_method         = "DNS"
   subject_alternative_names = concat(compact(local.env.san), compact(local.env.aliases))
@@ -16,7 +16,7 @@ module "acm" {
 }
 module "acm_cloudfront" {
   source                    = "terraform-aws-modules/acm/aws"
-  version                   = "5.1.1"
+  version                   = "6.1.0"
   count                     = local.use_us_east_1 ? 1 : 0
   providers                 = { aws = aws.us-east-1 }
   domain_name               = local.env.domain

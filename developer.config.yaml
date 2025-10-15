@@ -1,17 +1,17 @@
 brand: magenx
 codename: cloud
 
-budget_limit_amount: "1000"
+budget_limit_amount: "800"
 
-domain: "magenx.org"
+domain: "magenx.cloud"
 san: 
-  - "*.magenx.org"
+  - "*.magenx.cloud"
 aliases: 
   - ""
 
 vpc:
   cidr_block: "10.0.0.0/16"
-  availability_zone_total: 2
+  availability_zone_total: &availability_zone_total 2
   enable_dns_support: true
   enable_dns_hostnames: true
   instance_tenancy: default
@@ -31,88 +31,107 @@ sns:
   topic:
     budget:
       email: 
-        - "admin@magenx.org"
+        - "admin@magenx.cloud"
     devops:
       email:
-        - "admin@magenx.org"
+        - "admin@magenx.cloud"
     security:
       email:
-        - "admin@magenx.org"
+        - "admin@magenx.cloud"
 
 
 ec2:
+  varnish:
+    instance_type: "t4g.small"
+    service: false
+    volume_size: 25
+    desired_capacity: *availability_zone_total
+    min_size: *availability_zone_total
+    max_size: *availability_zone_total
   opensearch:
     instance_type: "t4g.small"
     service: true
     volume_size: 25
-    desired_capacity: 1
-    min_size: 1
-    max_size: 1
+    desired_capacity: *availability_zone_total
+    min_size: *availability_zone_total
+    max_size: *availability_zone_total
   redis:
     instance_type: "t4g.small"
     service: true
     volume_size: 25
-    desired_capacity: 1
-    min_size: 1
-    max_size: 1
+    desired_capacity: *availability_zone_total
+    min_size: *availability_zone_total
+    max_size: *availability_zone_total
   rabbitmq:
     instance_type: "t4g.nano"
     service: true
     volume_size: 25
-    desired_capacity: 1
-    min_size: 1
-    max_size: 1 
+    desired_capacity: *availability_zone_total
+    min_size: *availability_zone_total
+    max_size: *availability_zone_total
 
 
-elasticache_create: true
 elasticache:
-  session:
-    node_type: "cache.t4g.micro"
-    num_cache_clusters: 2
-  cache:
-    node_type: "cache.t4g.micro"
-    num_cache_clusters: 2
+  create: true
+  engine_version: "7.1"
+  cluster:
+    session:
+      node_type: "cache.t4g.micro"
+      num_cache_clusters: *availability_zone_total
+      transit_encryption_enabled: true
+      at_rest_encryption_enabled: true
+      maintenance_window: "sun:05:00-sun:09:00"
+      apply_immediately: true
+    cache:
+      node_type: "cache.t4g.micro"
+      num_cache_clusters: *availability_zone_total
+      transit_encryption_enabled: false
+      at_rest_encryption_enabled: false
+      maintenance_window: "sun:05:00-sun:09:00"
+      apply_immediately: true
+  parameter_group_family: "redis7"
+  parameters:
+    maxmemory-policy: "allkeys-lru"
+  metrics:
+    cpu:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "3"
+      metric_name: "CPUUtilization"
+      namespace: "AWS/ElastiCache"
+      period: "60"
+      statistic: "Average"
+      threshold: "80"
+    memory:
+      comparison_operator: "LessThanThreshold"
+      evaluation_periods: "3"
+      metric_name: "FreeableMemory"
+      namespace: "AWS/ElastiCache"
+      period: "60"
+      statistic: "Average"
+      threshold: "10000000"
+    evictions:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "3"
+      metric_name: "Evictions"
+      namespace: "AWS/ElastiCache"
+      period: "60"
+      statistic: "Sum"
+      threshold: "10"
+    connections:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "3"
+      metric_name: "CurrConnections"
+      namespace: "AWS/ElastiCache"
+      period: "60"
+      statistic: "Average"
+      threshold: "1000"
 
-elasticache_metric:
-  cpu:
-    comparison_operator: "GreaterThanThreshold"
-    evaluation_periods: "3"
-    metric_name: "CPUUtilization"
-    namespace: "AWS/ElastiCache"
-    period: "60"
-    statistic: "Average"
-    threshold: "80"
-  memory:
-    comparison_operator: "LessThanThreshold"
-    evaluation_periods: "3"
-    metric_name: "FreeableMemory"
-    namespace: "AWS/ElastiCache"
-    period: "60"
-    statistic: "Average"
-    threshold: "10000000"
-  evictions:
-    comparison_operator: "GreaterThanThreshold"
-    evaluation_periods: "3"
-    metric_name: "Evictions"
-    namespace: "AWS/ElastiCache"
-    period: "60"
-    statistic: "Sum"
-    threshold: "10"
-  connections:
-    comparison_operator: "GreaterThanThreshold"
-    evaluation_periods: "3"
-    metric_name: "CurrConnections"
-    namespace: "AWS/ElastiCache"
-    period: "60"
-    statistic: "Average"
-    threshold: "1000"
 
-
-opensearch_create: true
 opensearch:
+  create: true
   engine_version: "OpenSearch_2.19"
   instance_type: "r7g.medium.search"
-  instance_count: "2"
+  instance_count: *availability_zone_total
   tls_security_policy: "Policy-Min-TLS-1-2-PFS-2023-10"
   ebs_enabled: true
   volume_type: "gp3"
@@ -123,38 +142,37 @@ opensearch:
   dedicated_master_type: "r7g.medium.search"
   node_options:
     node_config: false
-    count: 2
+    count: *availability_zone_total
     type: "r7g.medium.search"
+  metrics:
+    cluster:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "1"
+      metric_name: "ClusterStatus.red"
+      namespace: "AWS/ES"
+      period: "60"
+      statistic: "Maximum"
+      threshold: "0"
+    memory:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "JVMMemoryPressure"
+      namespace: "AWS/ES"
+      period: "60"
+      statistic: "Maximum"
+      threshold: "85"
+    disk:
+      comparison_operator: "LessThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "FreeStorageSpace"
+      namespace: "AWS/ES"
+      period: "300"
+      statistic: "Minimum"
+      threshold: "20480"
 
-opensearch_metric:
-  cluster:
-    comparison_operator: "GreaterThanThreshold"
-    evaluation_periods: "1"
-    metric_name: "ClusterStatus.red"
-    namespace: "AWS/ES"
-    period: "60"
-    statistic: "Maximum"
-    threshold: "0"
-  memory:
-    comparison_operator: "GreaterThanThreshold"
-    evaluation_periods: "2"
-    metric_name: "JVMMemoryPressure"
-    namespace: "AWS/ES"
-    period: "60"
-    statistic: "Maximum"
-    threshold: "85"
-  disk:
-    comparison_operator: "LessThanThreshold"
-    evaluation_periods: "2"
-    metric_name: "FreeStorageSpace"
-    namespace: "AWS/ES"
-    period: "300"
-    statistic: "Minimum"
-    threshold: "20480"
 
-
-aurora_create: true
 aurora:
+  create: true
   storage_type: "gp3"
   storage_encrypted: true
   instance_class: "db.r6g.large"
@@ -185,41 +203,108 @@ aurora:
     innodb_lock_wait_timeout: 60
     tmp_table_size: "{DBInstanceClassMemory/512}"
     max_heap_table_size: "{DBInstanceClassMemory/512}"
+  metrics:
+    cpu:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "CPUUtilization"
+      namespace: "AWS/RDS"
+      period: "60"
+      statistic: "Average"
+      threshold: "80"
+    memory:
+      comparison_operator: "LessThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "FreeableMemory"
+      namespace: "AWS/RDS"
+      period: "60"
+      statistic: "Average"
+      threshold: "120480"
+    connections:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "DatabaseConnections"
+      namespace: "AWS/RDS"
+      period: "60"
+      statistic: "Average"
+      threshold: "500"
+    disk:
+      comparison_operator: "LessThanThreshold"
+      evaluation_periods: 2
+      metric_name: "FreeStorageSpace"
+      namespace: "AWS/RDS"
+      period: "300"
+      statistic: "Minimum"
+      threshold: "20480"
 
-aurora_metric:
-  cpu:
-    comparison_operator: "GreaterThanThreshold"
-    evaluation_periods: "2"
-    metric_name: "CPUUtilization"
-    namespace: "AWS/RDS"
-    period: "60"
-    statistic: "Average"
-    threshold: "80"
-  memory:
-    comparison_operator: "LessThanThreshold"
-    evaluation_periods: "2"
-    metric_name: "FreeableMemory"
-    namespace: "AWS/RDS"
-    period: "60"
-    statistic: "Average"
-    threshold: "120480"
-  connections:
-    comparison_operator: "GreaterThanThreshold"
-    evaluation_periods: "2"
-    metric_name: "DatabaseConnections"
-    namespace: "AWS/RDS"
-    period: "60"
-    statistic: "Average"
-    threshold: "500"
-  disk:
-    comparison_operator: "LessThanThreshold"
-    evaluation_periods: 2
-    metric_name: "FreeStorageSpace"
-    namespace: "AWS/RDS"
-    period: "300"
-    statistic: "Minimum"
-    threshold: "20480"
 
+rds:
+  create: true
+  engine: "mysql"
+  engine_version: "8.0"
+  family: "mysql8.0"
+  major_engine_version: "8.0"
+  instance_class: "db.t3.micro"
+  allocated_storage: 20
+  max_allocated_storage: 100
+  port: 3306
+  multi_az: false
+  manage_master_user_password: true
+  manage_master_user_password_rotation: true
+  master_user_password_rotation_automatically_after_days: 30
+  maintenance_window: "Mon:03:00-Mon:04:00"
+  backup_window: "01:00-02:00"
+  enabled_cloudwatch_logs_exports: ["general", "error", "slowquery"]
+  create_cloudwatch_log_group: true
+  monitoring_interval: 60
+  create_monitoring_role: true
+  performance_insights_enabled: true
+  performance_insights_retention_period: 7
+  skip_final_snapshot: false
+  deletion_protection: true
+  parameters:
+    log_bin_trust_function_creators: 1
+    max_allowed_packet: 268435456
+    max_connect_errors: 10000
+    interactive_timeout: 120
+    wait_timeout: 300
+    innodb_lock_wait_timeout: 60
+    tmp_table_size: "{DBInstanceClassMemory/512}"
+    max_heap_table_size: "{DBInstanceClassMemory/512}"
+  metrics:
+    cpu:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "CPUUtilization"
+      namespace: "AWS/RDS"
+      period: "60"
+      statistic: "Average"
+      threshold: "80"
+    memory:
+      comparison_operator: "LessThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "FreeableMemory"
+      namespace: "AWS/RDS"
+      period: "60"
+      statistic: "Average"
+      threshold: "120480"
+    connections:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "DatabaseConnections"
+      namespace: "AWS/RDS"
+      period: "60"
+      statistic: "Average"
+      threshold: "500"
+    disk:
+      comparison_operator: "LessThanThreshold"
+      evaluation_periods: 2
+      metric_name: "FreeStorageSpace"
+      namespace: "AWS/RDS"
+      period: "300"
+      statistic: "Minimum"
+      threshold: "20480" 
+    
 
 s3:
   bucket:
@@ -312,7 +397,7 @@ alb:
 asg:
   instance_type: "t4g.medium"
   health_check_type: "EC2"
-  min_size: 2
+  min_size: *availability_zone_total
   max_size: 4
   desired_capacity: 2
 

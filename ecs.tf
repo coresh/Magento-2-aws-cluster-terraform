@@ -73,7 +73,6 @@ module "ecs_service" {
   memory = local.env.ecs.cluster_memory
   service_registries = {
       container_name = local.env.ecs.container_name
-      container_port = local.env.ecs.container_port
       registry_arn   = aws_service_discovery_service.this.arn
   }
   runtime_platform = {

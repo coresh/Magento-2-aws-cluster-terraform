@@ -17,7 +17,7 @@ resource "random_password" "database" {
 # Create Aurora cluster
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "aurora" {
-  create          = local.env.aurora_create
+  create          = local.env.aurora.create
   source          = "terraform-aws-modules/rds-aurora/aws"
   version         = "9.16.0"
   name            = "${local.project}-aurora-cluster"
@@ -26,9 +26,9 @@ module "aurora" {
   manage_master_user_password          = local.env.aurora.manage_master_user_password
   manage_master_user_password_rotation = local.env.aurora.manage_master_user_password_rotation
   master_user_password_rotation_automatically_after_days = local.env.aurora.master_user_password_rotation_automatically_after_days
-  master_username = replace(local.project, "-", "")
+  master_username = local.env.brand
   master_password = random_password.database.result
-  database_name   = replace(local.project, "-", "_")
+  database_name   = local.env.brand
   backup_retention_period = 7
   preferred_backup_window = "02:00-05:00"
   vpc_id               = module.vpc.vpc_id

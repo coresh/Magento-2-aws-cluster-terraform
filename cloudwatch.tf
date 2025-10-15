@@ -8,7 +8,7 @@
 module "metric_alarm" {
   source              = "terraform-aws-modules/cloudwatch/aws//modules/metric-alarm"
   version             = "5.7.1"
-  for_each            = local.metric_alarm
+  for_each            = local.metrics_alarm
   alarm_name          = "${local.project}-${each.value.namespace}-${each.key}-${each.value.metric_name}"
   alarm_description   = "${each.value.namespace} ${each.key} ${each.value.metric_name} utilization"
   comparison_operator = each.value.comparison_operator
