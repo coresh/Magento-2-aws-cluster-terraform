@@ -1,0 +1,93 @@
+
+
+///////////////////////////////////////////////////[ AUTOSCALING ECS MODULE ]/////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Locals 
+# # ---------------------------------------------------------------------------------------------------------------------#
+
+locals {
+
+  user_data = <<-END
+    #!/bin/bash
+    ## Base system updates
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y ca-certificates curl syslog-ng
+    ## install ssm manager
+    cd /tmp/
+    curl -O https://s3.${data.aws_region.current.region}.amazonaws.com/amazon-ssm-${data.aws_region.current.region}/latest/debian_$(dpkg --print-architecture)/amazon-ssm-agent.deb
+    dpkg -i amazon-ssm-agent.deb
+    systemctl enable amazon-ssm-agent
+    systemctl start amazon-ssm-agent
+  END
+  
+}
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create Autoscaling group
+# # ---------------------------------------------------------------------------------------------------------------------#
+module "autoscaling" {
+  source           = "terraform-aws-modules/autoscaling/aws"
+  version          = "9.0.1"
+  name             = "${local.project}-${each.key}-asg"
+  image_id         = data.aws_ami.this.id
+  for_each         = local.env.ec2
+  instance_type    = each.value.instance_type
+  security_groups  = [module.autoscaling_security_group[each.key].security_group_id]
+  user_data        = base64encode(local.user_data)
+  vpc_zone_identifier    = module.vpc.private_subnets
+  health_check_type      = local.env.asg.health_check_type
+  min_size               = each.value.min_size
+  max_size               = each.value.max_size
+  desired_capacity       = each.value.desired_capacity
+  protect_from_scale_in           = true
+  use_mixed_instances_policy      = false
+  ignore_desired_capacity_changes = true
+  create_iam_instance_profile     = true
+  iam_role_name                   = "${local.project}-EC2-Role"
+  iam_role_description            = "Role for EC2 in ${local.project}"
+  iam_role_policies = {
+    AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  }
+  traffic_source_attachments = {
+    alb = {
+      traffic_source_identifier = module.alb[each.key].target_groups[each.key].arn
+      traffic_source_type       = "elbv2"
+    }
+  } 
+  block_device_mappings = [{
+    device_name = "/dev/xvda"
+    no_device   = 0
+    ebs = {
+      delete_on_termination = true
+      encrypted             = true
+      volume_size           = each.value.volume_size
+      volume_type           = "gp3"
+    }
+  }]
+  metadata_options = {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create security group for Autoscaling group
+# # ---------------------------------------------------------------------------------------------------------------------#
+module "autoscaling_security_group" {
+  source      = "terraform-aws-modules/security-group/aws"
+  version     = "5.3.0"
+  for_each    = local.env.ec2
+  name        = "${local.project}-asg-${each.key}-security-group"
+  description = "Autoscaling security group"
+  vpc_id      = module.vpc.vpc_id
+  computed_ingress_with_source_security_group_id = [{
+      rule                     = "http-80-tcp"
+      source_security_group_id = module.alb[each.key].security_group_id
+    }]
+  number_of_computed_ingress_with_source_security_group_id = 1
+  egress_rules = ["all-all"]
+}

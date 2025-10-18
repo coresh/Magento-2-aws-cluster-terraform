@@ -3,11 +3,12 @@ codename: cloud
 
 budget_limit_amount: "800"
 
-domain: "magenx.cloud"
-san: 
+domain: &domain "magenx.cloud"
+san: &san
   - "*.magenx.cloud"
 aliases: 
-  - ""
+  - *domain
+  - *san
 
 vpc:
   cidr_block: "10.0.0.0/16"
@@ -42,38 +43,25 @@ sns:
 
 ec2:
   varnish:
-    instance_type: "t4g.small"
-    service: false
-    volume_size: 25
+    instance_type: "t4g.micro"
+    volume_size: 10
     desired_capacity: *availability_zone_total
     min_size: *availability_zone_total
     max_size: *availability_zone_total
-  opensearch:
-    instance_type: "t4g.small"
-    service: true
-    volume_size: 25
-    desired_capacity: *availability_zone_total
-    min_size: *availability_zone_total
-    max_size: *availability_zone_total
-  redis:
-    instance_type: "t4g.small"
-    service: true
-    volume_size: 25
-    desired_capacity: *availability_zone_total
-    min_size: *availability_zone_total
-    max_size: *availability_zone_total
-  rabbitmq:
-    instance_type: "t4g.nano"
-    service: true
+  backend:
+    instance_type: "t4g.micro"
     volume_size: 25
     desired_capacity: *availability_zone_total
     min_size: *availability_zone_total
     max_size: *availability_zone_total
 
 
+managed_services: &create true
+  
 elasticache:
-  create: true
-  engine_version: "7.1"
+  create: *create
+  engine: "valkey"
+  engine_version: "8.2"
   cluster:
     session:
       node_type: "cache.t4g.micro"
@@ -85,11 +73,11 @@ elasticache:
     cache:
       node_type: "cache.t4g.micro"
       num_cache_clusters: *availability_zone_total
-      transit_encryption_enabled: false
-      at_rest_encryption_enabled: false
+      transit_encryption_enabled: true
+      at_rest_encryption_enabled: true
       maintenance_window: "sun:05:00-sun:09:00"
       apply_immediately: true
-  parameter_group_family: "redis7"
+  parameter_group_family: "valkey8"
   parameters:
     maxmemory-policy: "allkeys-lru"
   metrics:
@@ -128,16 +116,22 @@ elasticache:
 
 
 opensearch:
-  create: true
+  create: *create
   engine_version: "OpenSearch_2.19"
-  instance_type: "r7g.medium.search"
+  auto_software_update_enabled: false
+  instance_type: "t3.small.search"
+  auto_tune_options:
+    desired_state: "DISABLED"
   instance_count: *availability_zone_total
+  multi_az_with_standby_enabled: false
+  warm_count: *availability_zone_total
+  warm_enabled: false
+  warm_type: "ultrawarm1.medium.search"
   tls_security_policy: "Policy-Min-TLS-1-2-PFS-2023-10"
   ebs_enabled: true
   volume_type: "gp3"
-  volume_size: "100"
+  volume_size: "50"
   ip_address_type: "ipv4"
-  auto_software_update_enabled: false
   dedicated_master_enabled: false
   dedicated_master_type: "r7g.medium.search"
   node_options:
@@ -172,10 +166,10 @@ opensearch:
 
 
 aurora:
-  create: true
+  create: *create
   storage_type: "gp3"
   storage_encrypted: true
-  instance_class: "db.r6g.large"
+  instance_class: "db.t3.medium"
   engine: "aurora-mysql"
   engine_version: "8.0"
   skip_final_snapshot: true
@@ -192,7 +186,7 @@ aurora:
   deletion_protection: false
   autoscaling_enabled: true
   autoscaling_min_capacity: 1
-  autoscaling_max_capacity: 2
+  autoscaling_max_capacity: *availability_zone_total
   apply_immediately: true
   parameters:
     log_bin_trust_function_creators: 1
@@ -239,7 +233,7 @@ aurora:
 
 
 rds:
-  create: true
+  create: false
   engine: "mysql"
   engine_version: "8.0"
   family: "mysql8.0"
@@ -378,7 +372,7 @@ cloudfront:
   origin_ssl_protocols: "TLSv1.2"
   retain_on_delete: false
   is_ipv6_enabled: true
-  minimum_protocol_version: "TLSv1.2_2021"
+  minimum_protocol_version: "TLSv1.3_2025"
   path_pattern: "/media/catalog/product/*"
   failover_criteria_status_codes: [403, 404, 500, 503, 504]
   create_monitoring_subscription: true
@@ -387,33 +381,14 @@ cloudfront:
 alb:
   ssl_policy: "ELBSecurityPolicy-TLS13-1-2-Res-2021-06"
   enable_deletion_protection: false
-  target_group: "frontend-ec2"
-  target_type: "ip"
-  health_check_path: "health_check.php"
+  target_type: "instance"
+  health_check_path: "/health_check.php"
   fixed_response:
     status_code: "418"
     message_body: "No targets are responding to this request"
 
 asg:
-  instance_type: "t4g.medium"
   health_check_type: "EC2"
-  min_size: *availability_zone_total
-  max_size: 4
-  desired_capacity: 2
-
-ecr:
-  force_delete: true
-  docker_image: "public.ecr.aws/docker/library/hello-world:latest"
-  
-ecs:
-  container_name: "magenx-ecommerce-app"
-  container_port: 80
-  protocol: "tcp"
-  cluster_cpu: 2048
-  cluster_memory: 4096
-  container_cpu: 2048
-  container_memory: 4096
-  cpu_architecture: "ARM64"
 
 waf:
   restricted_countries: [CN, RU, IR, KP, SD, SY, CU]

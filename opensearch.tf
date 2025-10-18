@@ -7,12 +7,10 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "opensearch" {
   length           = 16
-  lower            = true
-  upper            = true
   min_lower        = 1
   min_upper        = 1
-  numeric          = true
-  special          = true
+  min_numeric      = 1
+  min_special      = 1
   override_special = "!&#$"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -37,6 +35,9 @@ module "opensearch" {
   advanced_options = {
     "rest.action.multi.allow_explicit_index" = "true"
   }
+  auto_tune_options = {
+    desired_state = local.env.opensearch.auto_tune_options.desired_state
+  }
   advanced_security_options = {
     enabled                        = true
     anonymous_auth_enabled         = false
@@ -59,6 +60,10 @@ module "opensearch" {
   cluster_config = {
     instance_count           = local.env.opensearch.instance_count
     instance_type            = local.env.opensearch.instance_type
+    multi_az_with_standby_enabled = local.env.opensearch.multi_az_with_standby_enabled
+    warm_count                    = local.env.opensearch.warm_count
+    warm_enabled                  = local.env.opensearch.warm_enabled
+    warm_type                = local.env.opensearch.warm_type
     dedicated_master_enabled = local.env.opensearch.dedicated_master_enabled
     dedicated_master_type    = local.env.opensearch.dedicated_master_type
     node_options = {

@@ -22,6 +22,7 @@ module "elasticache" {
   version                    = "1.10.2"
   for_each                   = local.env.elasticache.cluster
   replication_group_id       = "${local.project}-${each.key}-backend"
+  engine                     = local.env.elasticache.engine
   engine_version             = local.env.elasticache.engine_version
   node_type                  = each.value.node_type
   num_cache_clusters         = each.value.num_cache_clusters

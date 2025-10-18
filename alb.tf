@@ -7,9 +7,10 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 
 module "alb" {
-  source  = "terraform-aws-modules/alb/aws"
-  version = "10.0.0"
-  name                       = "${local.project}-alb"
+  source                     = "terraform-aws-modules/alb/aws"
+  version                    = "10.0.0"
+  for_each                   = local.env.ec2
+  name                       = "${local.project}-${each.key}-alb"
   internal                   = true
   vpc_id                     = module.vpc.vpc_id
   subnets                    = module.vpc.private_subnets
@@ -21,14 +22,14 @@ module "alb" {
       from_port   = 80
       to_port     = 80
       ip_protocol = "tcp"
-      cidr_ipv4   = "0.0.0.0/0"
+      cidr_ipv4   = each.key == "varnish" ? "0.0.0.0/0" : module.vpc.vpc_cidr_block
       description = "Allow HTTP"
     }
     https = {
       from_port   = 443
       to_port     = 443
       ip_protocol = "tcp"
-      cidr_ipv4   = "0.0.0.0/0"
+      cidr_ipv4   = each.key == "varnish" ? "0.0.0.0/0" : module.vpc.vpc_cidr_block
       description = "Allow HTTPS"
     }
   }
@@ -43,12 +44,12 @@ module "alb" {
 
   access_logs = {
     bucket = module.s3["logs"].s3_bucket_id
-    prefix = "ALB_logs"
+    prefix = "${each.key}-ALB_logs"
   }
 
   target_groups = {
-    frontend = {
-      name                 = "${local.project}-${local.env.alb.target_group}"
+    (each.key) = {
+      name                 = "${local.project}-${each.key}-tg"
       port                 = 80
       protocol             = "HTTP"
       vpc_id               = module.vpc.vpc_id
@@ -56,7 +57,7 @@ module "alb" {
       deregistration_delay = 300
       create_attachment    = false
       health_check = {
-        path                = "/${local.env.alb.health_check_path}"
+        path                = "${local.env.alb.health_check_path}"
         interval            = 30
         timeout             = 5
         healthy_threshold   = 3
@@ -70,13 +71,36 @@ module "alb" {
     http = {
       port     = 80
       protocol = "HTTP"
-      redirect = {
-        port        = "443"
-        protocol    = "HTTPS"
-        status_code = "HTTP_301"
+      fixed_response = {
+        content_type = "text/plain"
+        message_body = local.env.alb.fixed_response.message_body
+        status_code  = local.env.alb.fixed_response.status_code
+      }
+      rules = {
+        main = {
+          priority = 2
+          actions = [{
+            type = "forward"
+            forward = {
+              target_group_key = each.key
+            }
+          }]
+          conditions = [
+            {
+              host_header = {
+                values = [local.env.domain]
+              }
+            },
+            {
+              http_header = {
+                http_header_name = "X-${title(local.env.brand)}-Secret"
+                values           = [random_uuid.secret_header.result]
+              }
+            }
+          ]
+        }
       }
     }
-
     https = {
       port            = 443
       protocol        = "HTTPS"
@@ -88,16 +112,14 @@ module "alb" {
         status_code  = local.env.alb.fixed_response.status_code
       }
       rules = {
-        frontend = {
+        main = {
           priority = 2
-          actions = [
-            {
-              type = "forward"
-              forward = {
-                target_group_key = "frontend"
-              }
+          actions = [{
+            type = "forward"
+            forward = {
+              target_group_key = each.key
             }
-          ]
+          }]
           conditions = [
             {
               host_header = {

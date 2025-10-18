@@ -10,7 +10,7 @@ module "acm" {
   version                   = "6.1.0"
   domain_name               = local.env.domain
   validation_method         = "DNS"
-  subject_alternative_names = concat(compact(local.env.san), compact(local.env.aliases))
+  subject_alternative_names = concat(compact(local.env.san))
   create_route53_records    = false
   validate_certificate      = false
 }
@@ -21,7 +21,7 @@ module "acm_cloudfront" {
   providers                 = { aws = aws.us-east-1 }
   domain_name               = local.env.domain
   validation_method         = "DNS"
-  subject_alternative_names = concat(compact(local.env.san), compact(local.env.aliases))
+  subject_alternative_names = concat(compact(local.env.san))
   create_route53_records    = false
   validate_certificate      = false
 }
