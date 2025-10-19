@@ -7,7 +7,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "s3" {
   source   = "terraform-aws-modules/s3-bucket/aws"
-  version  = "5.7.0"
+  version  = "5.8.1"
   for_each = local.env.s3.bucket
   bucket   = "${local.project}-${each.key}"
   acl      = "private"
