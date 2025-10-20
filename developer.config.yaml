@@ -126,9 +126,6 @@ opensearch:
     desired_state: "DISABLED"
   instance_count: *availability_zone_total
   multi_az_with_standby_enabled: false
-  warm_count: 0 # *availability_zone_total
-  warm_enabled: false
-  warm_type: "" # "ultrawarm1.medium.search"
   tls_security_policy: "Policy-Min-TLS-1-2-PFS-2023-10"
   ebs_enabled: true
   volume_type: "gp3"
@@ -136,10 +133,14 @@ opensearch:
   ip_address_type: "ipv4"
   dedicated_master_enabled: false
   dedicated_master_type: "r7g.medium.search"
+  warm_enabled: false
+  warm_count: *availability_zone_total
+  warm_type: "ultrawarm1.medium.search"
   node_options:
-    node_config: false
-    count: 0 # *availability_zone_total
-    type: "" # "r7g.medium.search"
+    node_config:
+      enabled: false
+      count: *availability_zone_total
+      type: "r7g.medium.search"
   metrics:
     cluster:
       comparison_operator: "GreaterThanThreshold"

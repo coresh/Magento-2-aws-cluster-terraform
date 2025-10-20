@@ -36,14 +36,14 @@ module "efs" {
       }
   }
   access_points = {
-    posix_example = {
+    posix = {
       name = each.key
       posix_user = {
         gid  = each.value.gid
         uid  = each.value.uid
       }
     }
-    root_example = {
+    root = {
       root_directory = {
         path = "/${each.key}"
         creation_info = {

@@ -60,21 +60,21 @@ module "opensearch" {
   cluster_config = {
     instance_count           = local.env.opensearch.instance_count
     instance_type            = local.env.opensearch.instance_type
-    multi_az_with_standby_enabled = local.env.opensearch.multi_az_with_standby_enabled
-    warm_count                    = local.env.opensearch.warm_count
-    warm_enabled                  = local.env.opensearch.warm_enabled
-    warm_type                = local.env.opensearch.warm_type
     dedicated_master_enabled = local.env.opensearch.dedicated_master_enabled
     dedicated_master_type    = local.env.opensearch.dedicated_master_type
+    warm_enabled             = local.env.opensearch.warm_enabled
+    warm_count               = local.env.opensearch.warm_enabled ? local.env.opensearch.warm_count : null
+    warm_type                = local.env.opensearch.warm_enabled ? local.env.opensearch.warm_type : null
     node_options = {
       coordinator = {
         node_config = {
-          enabled = local.env.opensearch.node_options.node_config
-          count   = local.env.opensearch.node_options.count
-          type    = local.env.opensearch.node_options.type
+          enabled = local.env.opensearch.node_options.node_config.enabled
+          count   = local.env.opensearch.node_options.node_config.enabled ? local.env.opensearch.node_options.node_config.count : null
+          type    = local.env.opensearch.node_options.node_config.enabled ? local.env.opensearch.node_options.node_config.type : null
         }
       }
     }
+    multi_az_with_standby_enabled = local.env.opensearch.multi_az_with_standby_enabled
     zone_awareness_enabled = local.env.vpc.availability_zone_total > 1 && local.env.opensearch.instance_count > 1 ? true : false
     zone_awareness_config = {
         availability_zone_count = local.env.vpc.availability_zone_total > 1 ? local.env.vpc.availability_zone_total : null
