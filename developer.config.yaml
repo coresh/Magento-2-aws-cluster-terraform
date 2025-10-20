@@ -10,6 +10,18 @@ aliases:
   - *domain
   - *san
 
+sns:
+  topic:
+    budget:
+      email: 
+        - "admin@magenx.cloud"
+    devops:
+      email:
+        - "admin@magenx.cloud"
+    security:
+      email:
+        - "admin@magenx.cloud"
+
 vpc:
   cidr_block: "10.0.0.0/16"
   availability_zone_total: &availability_zone_total 2
@@ -26,20 +38,6 @@ nat_gateway:
   ami_image: "debian-12-arm64*"
   volume_size: 25
   firewall: true
-
-
-sns:
-  topic:
-    budget:
-      email: 
-        - "admin@magenx.cloud"
-    devops:
-      email:
-        - "admin@magenx.cloud"
-    security:
-      email:
-        - "admin@magenx.cloud"
-
 
 ec2:
   varnish:
@@ -89,6 +87,7 @@ elasticache:
       period: "60"
       statistic: "Average"
       threshold: "80"
+      dimensions: ""
     memory:
       comparison_operator: "LessThanThreshold"
       evaluation_periods: "3"
@@ -97,6 +96,7 @@ elasticache:
       period: "60"
       statistic: "Average"
       threshold: "10000000"
+      dimensions: ""
     evictions:
       comparison_operator: "GreaterThanThreshold"
       evaluation_periods: "3"
@@ -105,6 +105,7 @@ elasticache:
       period: "60"
       statistic: "Sum"
       threshold: "10"
+      dimensions: ""
     connections:
       comparison_operator: "GreaterThanThreshold"
       evaluation_periods: "3"
@@ -113,6 +114,7 @@ elasticache:
       period: "60"
       statistic: "Average"
       threshold: "1000"
+      dimensions: ""
 
 
 opensearch:
@@ -147,6 +149,7 @@ opensearch:
       period: "60"
       statistic: "Maximum"
       threshold: "0"
+      dimensions: ""
     memory:
       comparison_operator: "GreaterThanThreshold"
       evaluation_periods: "2"
@@ -155,6 +158,7 @@ opensearch:
       period: "60"
       statistic: "Maximum"
       threshold: "85"
+      dimensions: ""
     disk:
       comparison_operator: "LessThanThreshold"
       evaluation_periods: "2"
@@ -163,6 +167,7 @@ opensearch:
       period: "300"
       statistic: "Minimum"
       threshold: "20480"
+      dimensions: ""
 
 
 aurora:
@@ -206,6 +211,7 @@ aurora:
       period: "60"
       statistic: "Average"
       threshold: "80"
+      dimensions: ""
     memory:
       comparison_operator: "LessThanThreshold"
       evaluation_periods: "2"
@@ -214,6 +220,7 @@ aurora:
       period: "60"
       statistic: "Average"
       threshold: "120480"
+      dimensions: ""
     connections:
       comparison_operator: "GreaterThanThreshold"
       evaluation_periods: "2"
@@ -221,7 +228,8 @@ aurora:
       namespace: "AWS/RDS"
       period: "60"
       statistic: "Average"
-      threshold: "500"
+      threshold: "150"
+      dimensions: ""
     disk:
       comparison_operator: "LessThanThreshold"
       evaluation_periods: 2
@@ -230,6 +238,7 @@ aurora:
       period: "300"
       statistic: "Minimum"
       threshold: "20480"
+      dimensions: ""
 
 
 rds:
@@ -274,6 +283,7 @@ rds:
       period: "60"
       statistic: "Average"
       threshold: "80"
+      dimensions: ""
     memory:
       comparison_operator: "LessThanThreshold"
       evaluation_periods: "2"
@@ -282,6 +292,7 @@ rds:
       period: "60"
       statistic: "Average"
       threshold: "120480"
+      dimensions: ""
     connections:
       comparison_operator: "GreaterThanThreshold"
       evaluation_periods: "2"
@@ -289,7 +300,8 @@ rds:
       namespace: "AWS/RDS"
       period: "60"
       statistic: "Average"
-      threshold: "500"
+      threshold: "150"
+      dimensions: ""
     disk:
       comparison_operator: "LessThanThreshold"
       evaluation_periods: 2
@@ -297,7 +309,8 @@ rds:
       namespace: "AWS/RDS"
       period: "300"
       statistic: "Minimum"
-      threshold: "20480" 
+      threshold: "20480"
+      dimensions: ""
     
 
 s3:
@@ -386,9 +399,71 @@ alb:
   fixed_response:
     status_code: "418"
     message_body: "No targets are responding to this request"
+  metrics:
+    high_5xx_errors:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "HTTPCode_Target_5XX_Count"
+      namespace: "AWS/ApplicationELB"
+      period: "120"
+      statistic: "Sum"
+      threshold: "50"
+      dimensions: "LoadBalancer"
+    high_target_response_time:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "3"
+      metric_name: "TargetResponseTime"
+      namespace: "AWS/ApplicationELB"
+      period: "120"
+      statistic: "Average"
+      threshold: "2.0"
+      dimensions: "LoadBalancer"
+    unhealthy_hosts:
+      comparison_operator: "LessThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "HealthyHostCount"
+      namespace: "AWS/ApplicationELB"
+      period: "120"
+      statistic: "Average"
+      threshold: *availability_zone_total
+      dimensions: "LoadBalancer"
+    elb_5xx_errors:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "1"
+      metric_name: "HTTPCode_ELB_5XX_Count"
+      namespace: "AWS/ApplicationELB"
+      period: "60"
+      statistic: "Sum"
+      threshold: "5"
+      dimensions: "LoadBalancer"
+
 
 asg:
   health_check_type: "EC2"
+  protect_from_scale_in: false
+  target_tracking_configuration:
+    predefined_metric_type: "ASGAverageCPUUtilization"
+    target_value: "70.0"
+    disable_scale_in: false
+  metrics:
+    disk:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "disk_used_percent"
+      namespace: "backend"
+      period: "120"
+      statistic: "Average"
+      threshold: "80"
+      dimensions: "AutoScalingGroupName"
+    max_instances:
+      comparison_operator: "GreaterThanOrEqualToThreshold"
+      evaluation_periods: "1"
+      metric_name: "GroupInServiceInstances"
+      namespace: "AWS/AutoScaling"
+      period: "60"
+      statistic: "Maximum"
+      threshold: *availability_zone_total
+      dimensions: "AutoScalingGroupName"
 
 waf:
   restricted_countries: [CN, RU, IR, KP, SD, SY, CU]

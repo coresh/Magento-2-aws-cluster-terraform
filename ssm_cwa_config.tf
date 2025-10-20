@@ -1,0 +1,101 @@
+
+
+
+/////////////////////////////////////////////////////////[ SYSTEMS MANAGER ]//////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Parameter configuration file for CloudWatch Agent
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_ssm_parameter" "cloudwatch_agent_config" {
+  name        = "/cloudwatch-agent/amazon-cloudwatch-agent.json"
+  description = "Configuration file for CloudWatch agent for ${local.project}"
+  type        = "String"
+  value       = <<EOF
+{
+      "logs": {
+        "logs_collected": {
+          "files": {
+            "collect_list": [
+            {
+                "file_path": "/var/log/nginx/error.log",
+                "log_group_name": "${local.project}_nginx_error_log",
+                "log_stream_name": "{instance_id}-{ip_address}",
+                "retention_in_days": 30
+            },
+            {
+                "file_path": "/var/log/php/error.log",
+                "log_group_name": "${local.project}_php_error_log",
+                "log_stream_name": "{instance_id}-{ip_address}",
+                "retention_in_days": 30
+            },
+            {
+                "file_path": "/var/log/aws/codedeploy-agent/codedeploy-agent.log",
+                "log_group_name": "${local.project}_codedeploy_agent_log",
+                "log_stream_name": "{instance_id}-agent-log"
+            },
+            {
+                "file_path": "/opt/codedeploy-agent/deployment-root/deployment-logs/codedeploy-agent-deployments.log",
+                "log_group_name": "${local.project}_codedeploy_agent_deployment_log",
+                "log_stream_name": "{instance_id}-codedeploy-agent-deployment-log"
+            },
+            {
+                "file_path": "/tmp/codedeploy-agent.update.log",
+                "log_group_name": "${local.project}_codedeploy_agent_updater_log",
+                "log_stream_name": "{instance_id}-codedeploy-agent-updater-log"
+            },
+            {
+                "file_path": "/opt/${local.env.brand}/ec2_config/log/**.log",
+                "log_group_name": "${local.project}_instance_configuration",
+                "log_stream_name": "{instance_id}-{ip_address}",
+                "retention_in_days": 30
+            },
+            {
+                "file_path": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
+                "log_group_name": "${local.project}_cloudwatch_agent_log",
+                "log_stream_name": "{instance_id}-{ip_address}",
+                "retention_in_days": 30
+            },
+            {
+                "file_path": "/var/log/apt/**.log",
+                "log_group_name": "${local.project}_system_apt",
+                "log_stream_name": "{instance_id}-{ip_address}",
+                "retention_in_days": 30
+            },
+            {
+                "file_path": "/var/log/syslog",
+                "log_group_name": "${local.project}_system_syslog",
+                "log_stream_name": "{instance_id}-{ip_address}",
+                "retention_in_days": 30
+            }
+            ]
+          }
+        },
+        "log_stream_name": "${local.project}-instance-logs",
+        "force_flush_interval" : 60
+      },
+  "metrics": {
+    "namespace": "backend",
+    "append_dimensions": {
+      "InstanceId": "$${aws:InstanceId}",
+      "AutoScalingGroupName": "$${aws:AutoScalingGroupName}"
+    },
+    "metrics_collected": {
+      "disk": {
+        "measurement": [
+          "free",
+          "total",
+          "used",
+          "used_percent",
+          "inodes_free",
+        ],
+        "resources": ["*"],
+        "ignore_file_system_types": ["sysfs", "tmpfs"]
+      }
+    }
+  }
+}
+EOF
+  tags = {
+    Name = "amazon-cloudwatch-agent.json"
+  }
+}

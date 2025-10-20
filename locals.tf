@@ -36,10 +36,11 @@ locals {
 
   # Cloudwatch metrics alarm for services
   metrics_alarm = merge(
-    local.env.elasticache.create ? local.env.elasticache.metrics : {},
-    local.env.opensearch.create ? local.env.opensearch.metrics : {},
+    local.env.elasticache.metrics,
+    local.env.opensearch.metrics,
+	local.env.asg.metrics,
     local.env.aurora.create ? local.env.aurora.metrics : {},
-    local.env.rds.create ? local.env.rds.metrics : {},
+    local.env.rds.create ? local.env.rds.metrics : {}
   )
 
 # # ---------------------------------------------------------------------------------------------------------------------#

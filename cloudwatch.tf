@@ -19,4 +19,12 @@ module "metric_alarm" {
   metric_name         = each.value.metric_name
   statistic           = each.value.statistic
   alarm_actions       = [module.sns["devops"].topic_arn]
+  ok_actions                = [module.sns["devops"].topic_arn]
+  insufficient_data_actions = [module.sns["devops"].topic_arn]
+  dimensions = each.value.dimensions ? {
+    (each.value.dimensions) = lookup({
+      "AutoScalingGroupName" = module.autoscaling["backend"].autoscaling_group_name
+      "LoadBalancer"         = module.alb["varnish"].id
+    }, each.value.dimensions, null)
+    } : null
 }
