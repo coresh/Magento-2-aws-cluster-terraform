@@ -7,16 +7,17 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 
 module "imgproxy" {  
-  source        = "terraform-aws-modules/lambda/aws"
-  version       = "8.1.2"
-  create        = true
-  function_name = "${local.project}-imgproxy"
-  description   = "Imgproxy image processing service for ${local.env.domain}"
-  package_type  = "Image"
-  image_uri     = "ghcr.io/imgproxy/imgproxy:latest-arm64"
-  memory_size   = local.env.lambda.memory_size
-  timeout       = local.env.lambda.timeout
-  architectures = ["arm64"]
+  source         = "terraform-aws-modules/lambda/aws"
+  version        = "8.1.2"
+  create         = true
+  function_name  = "${local.project}-imgproxy"
+  description    = "Imgproxy image processing service for ${local.env.domain}"
+  package_type   = "Image"
+  create_package = false
+  image_uri      = "ghcr.io/imgproxy/imgproxy:latest-arm64"
+  memory_size    = local.env.lambda.memory_size
+  timeout        = local.env.lambda.timeout
+  architectures  = ["arm64"]
   environment_variables = {
     PORT                               = local.env.imgproxy.port
     IMGPROXY_USE_S3                    = local.env.imgproxy.use_s3
