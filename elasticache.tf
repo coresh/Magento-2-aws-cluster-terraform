@@ -16,17 +16,16 @@ resource "random_password" "elasticache" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Parameterstore for elasticache env
 # # ---------------------------------------------------------------------------------------------------------------------#
+
 locals {
-  elasticache = {
-    ELASTICACHE_SESSION_CLUSTER_ARN              = try(module.elasticache["session"].replication_group_arn, null)
-    ELASTICACHE_SESSION_CLUSTER_ADDRESS          = try(module.elasticache["session"].replication_group_id, null)
-    ELASTICACHE_SESSION_PRIMARY_ENDPOINT_ADDRESS = try(module.elasticache["session"].replication_group_primary_endpoint_address, null)
-    ELASTICACHE_SESSION_READER_ENDPOINT_ADDRESS  = try(module.elasticache["session"].replication_group_reader_endpoint_address, null)
-    ELASTICACHE_CACHE_CLUSTER_ARN                = try(module.elasticache["cache"].replication_group_arn, null)
-    ELASTICACHE_CACHE_CLUSTER_ADDRESS            = try(module.elasticache["cache"].replication_group_id, null)
-    ELASTICACHE_CACHE_PRIMARY_ENDPOINT_ADDRESS   = try(module.elasticache["cache"].replication_group_primary_endpoint_address, null)
-    ELASTICACHE_CACHE_READER_ENDPOINT_ADDRESS    = try(module.elasticache["cache"].replication_group_reader_endpoint_address, null)
-  }
+  elasticache = merge([
+    for elasticache_key, elasticache_output in module.elasticache : {
+    ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_ARN                      = elasticache_output.replication_group_arn
+    ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_ID                       = elasticache_output.replication_group_id
+    ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_PRIMARY_ENDPOINT_ADDRESS = elasticache_output.replication_group_primary_endpoint_address
+    ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_READER_ENDPOINT_ADDRESS  = elasticache_output.replication_group_reader_endpoint_address
+    }
+  ])
 }
 
 resource "aws_ssm_parameter" "elasticache" {
