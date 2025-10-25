@@ -442,14 +442,6 @@ s3:
         status: "Enabled"
       lifecycle_rule:
         status: "Enabled"
-    media-optimized:
-      eventbridge: false
-      versioning: false
-      policy: "media_optimized_bucket_policy"
-      intelligent_tiering:
-        status: "Enabled"
-      lifecycle_rule:
-        status: "Enabled"
     system:
       versioning: false
       eventbridge: false
