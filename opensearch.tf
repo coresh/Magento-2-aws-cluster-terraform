@@ -30,15 +30,15 @@ locals {
   opensearch = {
     OPENSEARCH_ADMIN_USERNAME                    = random_string.opensearch.result
     OPENSEARCH_ADMIN_PASSWORD                    = random_password.opensearch.result
-    OPENSEARCH_DOMAIN_ARN                        = try(module.opensearch.arn, null)
+    OPENSEARCH_DOMAIN_ARN                        = try(module.opensearch.domain_arn, null)
     OPENSEARCH_DOMAIN_ID                         = try(module.opensearch.domain_id, null)
-    OPENSEARCH_DOMAIN_ENDPOINT                   = try(module.opensearch.endpoint, null)
-    OPENSEARCH_DOMAIN_ENDPOINT_V2                = try(module.opensearch.endpoint_v2, null)
-    OPENSEARCH_DOMAIN_DASHBOARD_ENDPOINT         = try(module.opensearch.dashboard_endpoint, null)
-    OPENSEARCH_DOMAIN_DASHBOARD_ENDPOINT_V2      = try(module.opensearch.dashboard_endpoint_v2, null)
+    OPENSEARCH_DOMAIN_ENDPOINT                   = try(module.opensearch.domain_endpoint, null)
+    OPENSEARCH_DOMAIN_ENDPOINT_V2                = try(module.opensearch.domain_endpoint_v2, null)
+    OPENSEARCH_DOMAIN_DASHBOARD_ENDPOINT         = try(module.opensearch.domain_dashboard_endpoint, null)
+    OPENSEARCH_DOMAIN_DASHBOARD_ENDPOINT_V2      = try(module.opensearch.domain_dashboard_endpoint_v2, null)
     OPENSEARCH_DOMAIN_ENDPOINT_V2_HOSTED_ZONE_ID = try(module.opensearch.domain_endpoint_v2_hosted_zone_id, null)
-    OPENSEARCH_URL                               = "https://${try(module.opensearch.endpoint, "")}:443"
-    OPENSEARCH_DASHBOARD_URL                     = "https://${try(module.opensearch.dashboard_endpoint, "")}"
+    OPENSEARCH_URL                               = "https://${try(module.opensearch.domain_endpoint, "")}:443"
+    OPENSEARCH_DASHBOARD_URL                     = "https://${try(module.opensearch.domain_dashboard_endpoint, "")}"
   }
 }
 
