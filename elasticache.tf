@@ -20,10 +20,10 @@ resource "random_password" "elasticache" {
 locals {
   elasticache = merge([
     for elasticache_key, elasticache_output in module.elasticache : {
-    ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_ARN                      = elasticache_output.replication_group_arn
-    ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_ID                       = elasticache_output.replication_group_id
-    ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_PRIMARY_ENDPOINT_ADDRESS = elasticache_output.replication_group_primary_endpoint_address
-    ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_READER_ENDPOINT_ADDRESS  = elasticache_output.replication_group_reader_endpoint_address
+    "ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_ARN"                      = elasticache_output.replication_group_arn
+    "ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_ID"                       = elasticache_output.replication_group_id
+    "ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_PRIMARY_ENDPOINT_ADDRESS" = elasticache_output.replication_group_primary_endpoint_address
+    "ELASTICACHE_${upper(elasticache_key)}_REPLICATION_GROUP_READER_ENDPOINT_ADDRESS"  = elasticache_output.replication_group_reader_endpoint_address
     }
   ])
 }
