@@ -3,6 +3,31 @@
 /////////////////////////////////////////////////////[ S3 BUCKETS MODULE ]////////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Parameterstore for s3 env
+# # ---------------------------------------------------------------------------------------------------------------------#
+
+locals {
+  s3 = merge([
+    for s3_key, s3_output in module.s3 : {
+      "S3_${upper(s3_key)}_BUCKET_ID"                   = s3_output.s3_bucket_id
+      "S3_${upper(s3_key)}_BUCKET_ARN"                  = s3_output.s3_bucket_arn
+      "S3_${upper(s3_key)}_BUCKET_DOMAIN_NAME"          = s3_output.s3_bucket_bucket_domain_name
+      "S3_${upper(s3_key)}_BUCKET_REGIONAL_DOMAIN_NAME" = s3_output.s3_bucket_bucket_regional_domain_name
+    }
+  ])
+}
+
+resource "aws_ssm_parameter" "s3" {
+  for_each    = local.s3
+  name        = "/${local.project}/${each.key}"
+  description = "S3 parameter: ${each.key}"
+  type        = "String"
+  value       = each.value
+  tags = {
+    Service   = "s3"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create S3 buckets
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "s3" {
