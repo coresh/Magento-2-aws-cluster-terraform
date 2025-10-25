@@ -36,7 +36,7 @@ resource "aws_mq_broker" "this" {
   }
   publicly_accessible = local.env.rabbitmq.publicly_accessible
   auto_minor_version_upgrade = local.env.rabbitmq.auto_minor_version_upgrade
-  maintenance_window_start_time = {
+  maintenance_window_start_time {
     day_of_week = local.env.rabbitmq.maintenance_window_start_time.day_of_week
     time_of_day = local.env.rabbitmq.maintenance_window_start_time.time_of_day
     time_zone   = local.env.rabbitmq.maintenance_window_start_time.time_zone
@@ -123,4 +123,5 @@ module "rabbitmq_security_group" {
   }
 
 }
+
 
