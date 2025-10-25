@@ -19,14 +19,12 @@ resource "random_password" "elasticache" {
 locals {
   elasticache = {
     # Session Cluster
-    ELASTICACHE_SESSION_CLUSTER_ARN              = try(module.elasticache["session"].arn, null)
-    ELASTICACHE_SESSION_ENGINE_VERSION           = try(module.elasticache["session"].engine_version_actual, null)
+    ELASTICACHE_SESSION_CLUSTER_ARN              = try(module.elasticache["session"].cluster_arn, null)
     ELASTICACHE_SESSION_CLUSTER_ADDRESS          = try(module.elasticache["session"].cluster_address, null)
-    ELASTICACHE_SESSION_CONFIGURATION_ENDPOINT   = try(module.elasticache["session"].configuration_endpoint, null)
-    ELASTICACHE_CACHE_CLUSTER_ARN                = try(module.elasticache["cache"].arn, null)
-    ELASTICACHE_CACHE_ENGINE_VERSION             = try(module.elasticache["cache"].engine_version_actual, null)
+    ELASTICACHE_SESSION_CONFIGURATION_ENDPOINT   = try(module.elasticache["session"].cluster_configuration_endpoint, null)
+    ELASTICACHE_CACHE_CLUSTER_ARN                = try(module.elasticache["cache"].cluster_arn, null)
     ELASTICACHE_CACHE_CLUSTER_ADDRESS            = try(module.elasticache["cache"].cluster_address, null)
-    ELASTICACHE_CACHE_CONFIGURATION_ENDPOINT     = try(module.elasticache["cache"].configuration_endpoint, null)
+    ELASTICACHE_CACHE_CONFIGURATION_ENDPOINT     = try(module.elasticache["cache"].cluster_configuration_endpoint, null)
   }
 }
 
