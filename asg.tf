@@ -43,13 +43,39 @@ module "autoscaling" {
   max_size               = each.value.max_size
   desired_capacity       = each.value.desired_capacity
   protect_from_scale_in           = local.env.asg.protect_from_scale_in
-  use_mixed_instances_policy      = false
   ignore_desired_capacity_changes = true
   create_iam_instance_profile     = true
   iam_role_name                   = "${local.project}-EC2-Role"
   iam_role_description            = "Role for EC2 in ${local.project}"
   iam_role_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  }
+  use_mixed_instances_policy = local.env.asg.use_mixed_instances_policy
+  mixed_instances_policy = {
+    instances_distribution = {
+      on_demand_base_capacity                  = each.value.min_size
+      on_demand_percentage_above_base_capacity = 0
+      on_demand_allocation_strategy            = local.env.asg.mixed_instances_policy.on_demand_allocation_strategy
+      spot_allocation_strategy                 = local.env.asg.mixed_instances_policy.spot_allocation_strategy
+    }
+    launch_template = {
+      override = [
+        {
+          instance_requirements = {
+            vcpu_count = {
+              min = local.env.asg.override.instance_requirements.vcpu_count.min
+              max = local.env.asg.override.instance_requirements.vcpu_count.max
+            }
+            memory_mib = {
+              min = local.env.asg.override.instance_requirements.memory_mib.min
+              max = local.env.asg.override.instance_requirements.memory_mib.max
+            }
+            instance_generations = local.env.asg.override.instance_requirements.instance_generations
+            burstable_performance = local.env.asg.override.instance_requirements.burstable_performance
+          }
+        }
+      ]
+    }
   }
   traffic_source_attachments = {
     alb = {
@@ -90,7 +116,7 @@ module "autoscaling" {
       name               = "${local.project}-cpu-target-tracking"
       policy_type        = "TargetTrackingScaling"
       adjustment_type    = "ChangeInCapacity"
-      
+      estimated_instance_warmup = local.env.asg.instance_warmup
       target_tracking_configuration = {
         predefined_metric_specification = {
           predefined_metric_type = local.env.asg.target_tracking_configuration.predefined_metric_type
@@ -104,7 +130,7 @@ module "autoscaling" {
     strategy = "Rolling"
     preferences = {
       min_healthy_percentage = 50
-      instance_warmup        = 300
+      instance_warmup        = local.env.asg.instance_warmup
     }
     triggers = ["tag"]
   }

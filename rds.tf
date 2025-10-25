@@ -25,7 +25,7 @@ module "rds" {
   password = random_password.database.result
   port     = local.env.rds.port
   db_subnet_group_name   = module.vpc.database_subnet_group_name
-  vpc_security_group_ids = [module.security_group.security_group_id]
+  vpc_security_group_ids = [module.rds_security_group.security_group_id]
   multi_az               = local.env.rds.multi_az
   maintenance_window              = local.env.rds.maintenance_window
   backup_window                   = local.env.rds.backup_window
@@ -50,19 +50,28 @@ module "rds" {
   ]
 }
 
-module "security_group" {
+module "rds_security_group" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.3.0"
   name        = "${local.project}-rds-security"
   description = "${local.project} MySQL security group"
   vpc_id      = module.vpc.vpc_id
-  ingress_with_cidr_blocks = [
+  ingress_with_source_security_group_id = [
     {
       from_port   = local.env.rds.port
       to_port     = local.env.rds.port
       protocol    = "tcp"
-      description = "MySQL access from within VPC"
-      cidr_blocks = module.vpc.vpc_cidr_block
-    },
+      description = "MySQL access from EC2 backend within VPC"
+      source_security_group_id = module.autoscaling_security_group["backend"].security_group_id
+    }
+  ]
+  egress_with_cidr_blocks = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      description = "Allow all outbound traffic"
+      cidr_blocks = "0.0.0.0/0"
+    }
   ]
 }

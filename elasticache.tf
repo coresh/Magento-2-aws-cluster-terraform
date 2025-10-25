@@ -7,11 +7,38 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "elasticache" {
   length           = 16
-  lower            = true
-  upper            = true
-  numeric          = true
-  special          = true
+  min_lower        = 1
+  min_upper        = 1
+  min_numeric      = 1
+  min_special      = 1
   override_special = "!&#$"
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Parameterstore for elasticache env
+# # ---------------------------------------------------------------------------------------------------------------------#
+locals {
+  elasticache = {
+    # Session Cluster
+    ELASTICACHE_SESSION_CLUSTER_ARN              = try(module.elasticache["session"].arn, null)
+    ELASTICACHE_SESSION_ENGINE_VERSION           = try(module.elasticache["session"].engine_version_actual, null)
+    ELASTICACHE_SESSION_CLUSTER_ADDRESS          = try(module.elasticache["session"].cluster_address, null)
+    ELASTICACHE_SESSION_CONFIGURATION_ENDPOINT   = try(module.elasticache["session"].configuration_endpoint, null)
+    ELASTICACHE_CACHE_CLUSTER_ARN                = try(module.elasticache["cache"].arn, null)
+    ELASTICACHE_CACHE_ENGINE_VERSION             = try(module.elasticache["cache"].engine_version_actual, null)
+    ELASTICACHE_CACHE_CLUSTER_ADDRESS            = try(module.elasticache["cache"].cluster_address, null)
+    ELASTICACHE_CACHE_CONFIGURATION_ENDPOINT     = try(module.elasticache["cache"].configuration_endpoint, null)
+  }
+}
+
+resource "aws_ssm_parameter" "elasticache" {
+  for_each    = local.elasticache
+  name        = "/${local.project}/${each.key}"
+  description = "ElastiCache parameter: ${each.key}"
+  type        = "String"
+  value       = each.value
+  tags = {
+    Service   = "elasticache"
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create Elasticache redis replication group
@@ -37,7 +64,7 @@ module "elasticache" {
   security_group_name  = "${local.project}-elasticache"
   security_group_rules = {
     ingress_vpc = {
-      description = "VPC allowed traffic whitelist"
+      description = "VPC allowed traffic"
       cidr_ipv4   = module.vpc.vpc_cidr_block
     }
   }

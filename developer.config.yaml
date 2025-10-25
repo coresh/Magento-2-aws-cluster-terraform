@@ -36,7 +36,7 @@ nat_gateway:
   instance_type: "t4g.nano"
   ami_owner: "136693071363"
   ami_image: "debian-12-arm64*"
-  volume_size: 25
+  volume_size: 10
   firewall: true
 
 ec2:
@@ -52,7 +52,6 @@ ec2:
     desired_capacity: *availability_zone_total
     min_size: *availability_zone_total
     max_size: *availability_zone_total
-
 
 managed_services: &create true
   
@@ -116,6 +115,22 @@ elasticache:
       threshold: "1000"
       dimensions: ""
 
+rabbitmq:
+  create: *create
+  engine_version: "3.13"
+  deployment_mode: "SINGLE_INSTANCE" # "CLUSTER_MULTI_AZ" "ACTIVE_STANDBY_MULTI_AZ"
+  host_instance_type: "mq.t3.micro"
+  publicly_accessible: false
+  apply_immediately: true
+  auto_minor_version_upgrade: true
+  maintenance_window_start_time:
+    day_of_week: "SUNDAY"
+    time_of_day: "00:30"
+    time_zone: "GMT"
+  encryption_options:
+    use_aws_owned_key: false
+  logs:
+    general: true
 
 opensearch:
   create: *create
@@ -169,7 +184,6 @@ opensearch:
       statistic: "Minimum"
       threshold: "20480"
       dimensions: ""
-
 
 aurora:
   create: *create
@@ -241,7 +255,6 @@ aurora:
       threshold: "20480"
       dimensions: ""
 
-
 rds:
   create: false
   engine: "mysql"
@@ -312,7 +325,94 @@ rds:
       statistic: "Minimum"
       threshold: "20480"
       dimensions: ""
-    
+
+alb:
+  ssl_policy: "ELBSecurityPolicy-TLS13-1-2-Res-2021-06"
+  enable_deletion_protection: false
+  target_type: "instance"
+  health_check_path: "/health_check.php"
+  fixed_response:
+    status_code: "418"
+    message_body: "No targets are responding to this request"
+  metrics:
+    high_5xx_errors:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "HTTPCode_Target_5XX_Count"
+      namespace: "AWS/ApplicationELB"
+      period: "120"
+      statistic: "Sum"
+      threshold: "50"
+      dimensions: "LoadBalancer"
+    high_target_response_time:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "3"
+      metric_name: "TargetResponseTime"
+      namespace: "AWS/ApplicationELB"
+      period: "120"
+      statistic: "Average"
+      threshold: "2.0"
+      dimensions: "LoadBalancer"
+    unhealthy_hosts:
+      comparison_operator: "LessThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "HealthyHostCount"
+      namespace: "AWS/ApplicationELB"
+      period: "120"
+      statistic: "Average"
+      threshold: *availability_zone_total
+      dimensions: "LoadBalancer"
+    elb_5xx_errors:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "1"
+      metric_name: "HTTPCode_ELB_5XX_Count"
+      namespace: "AWS/ApplicationELB"
+      period: "60"
+      statistic: "Sum"
+      threshold: "5"
+      dimensions: "LoadBalancer"
+
+asg:
+  health_check_type: "EC2"
+  protect_from_scale_in: false
+  target_tracking_configuration:
+    predefined_metric_type: "ASGAverageCPUUtilization"
+    target_value: "70.0"
+    disable_scale_in: false
+  instance_warmup: 120
+  use_mixed_instances_policy: true
+  mixed_instances_policy:
+    on_demand_allocation_strategy: "prioritized"
+    spot_allocation_strategy: "capacity-optimized"
+  override:
+    instance_requirements:
+      vcpu_count:
+        min: 2
+        max: 4
+      memory_mib:
+        min: 4096
+        max: 8192
+      instance_generations: ["current"]
+      burstable_performance: "included"
+  metrics:
+    disk:
+      comparison_operator: "GreaterThanThreshold"
+      evaluation_periods: "2"
+      metric_name: "disk_used_percent"
+      namespace: "backend"
+      period: "120"
+      statistic: "Average"
+      threshold: "80"
+      dimensions: "AutoScalingGroupName"
+    max_instances:
+      comparison_operator: "GreaterThanOrEqualToThreshold"
+      evaluation_periods: "1"
+      metric_name: "GroupInServiceInstances"
+      namespace: "AWS/AutoScaling"
+      period: "60"
+      statistic: "Maximum"
+      threshold: *availability_zone_total
+      dimensions: "AutoScalingGroupName"
 
 s3:
   bucket:
@@ -365,7 +465,6 @@ s3:
       lifecycle_rule:
         status: "Disabled"
 
-
 efs:
   var:
     uid: "1001"
@@ -375,7 +474,6 @@ efs:
     uid: "1001"
     gid: "1002"
     permissions: "2770"
-
 
 cloudfront:
   staging: false
@@ -391,81 +489,6 @@ cloudfront:
   failover_criteria_status_codes: [403, 404, 500, 503, 504]
   create_monitoring_subscription: true
 
-
-alb:
-  ssl_policy: "ELBSecurityPolicy-TLS13-1-2-Res-2021-06"
-  enable_deletion_protection: false
-  target_type: "instance"
-  health_check_path: "/health_check.php"
-  fixed_response:
-    status_code: "418"
-    message_body: "No targets are responding to this request"
-  metrics:
-    high_5xx_errors:
-      comparison_operator: "GreaterThanThreshold"
-      evaluation_periods: "2"
-      metric_name: "HTTPCode_Target_5XX_Count"
-      namespace: "AWS/ApplicationELB"
-      period: "120"
-      statistic: "Sum"
-      threshold: "50"
-      dimensions: "LoadBalancer"
-    high_target_response_time:
-      comparison_operator: "GreaterThanThreshold"
-      evaluation_periods: "3"
-      metric_name: "TargetResponseTime"
-      namespace: "AWS/ApplicationELB"
-      period: "120"
-      statistic: "Average"
-      threshold: "2.0"
-      dimensions: "LoadBalancer"
-    unhealthy_hosts:
-      comparison_operator: "LessThanThreshold"
-      evaluation_periods: "2"
-      metric_name: "HealthyHostCount"
-      namespace: "AWS/ApplicationELB"
-      period: "120"
-      statistic: "Average"
-      threshold: *availability_zone_total
-      dimensions: "LoadBalancer"
-    elb_5xx_errors:
-      comparison_operator: "GreaterThanThreshold"
-      evaluation_periods: "1"
-      metric_name: "HTTPCode_ELB_5XX_Count"
-      namespace: "AWS/ApplicationELB"
-      period: "60"
-      statistic: "Sum"
-      threshold: "5"
-      dimensions: "LoadBalancer"
-
-
-asg:
-  health_check_type: "EC2"
-  protect_from_scale_in: false
-  target_tracking_configuration:
-    predefined_metric_type: "ASGAverageCPUUtilization"
-    target_value: "70.0"
-    disable_scale_in: false
-  metrics:
-    disk:
-      comparison_operator: "GreaterThanThreshold"
-      evaluation_periods: "2"
-      metric_name: "disk_used_percent"
-      namespace: "backend"
-      period: "120"
-      statistic: "Average"
-      threshold: "80"
-      dimensions: "AutoScalingGroupName"
-    max_instances:
-      comparison_operator: "GreaterThanOrEqualToThreshold"
-      evaluation_periods: "1"
-      metric_name: "GroupInServiceInstances"
-      namespace: "AWS/AutoScaling"
-      period: "60"
-      statistic: "Maximum"
-      threshold: *availability_zone_total
-      dimensions: "AutoScalingGroupName"
-
 waf:
   restricted_countries: [CN, RU, IR, KP, SD, SY, CU]
   whitelist_ip:
@@ -479,3 +502,33 @@ waf:
     - "47.80.0.0/15"
     - "47.82.0.0/17"
     - "47.83.0.0/16"
+
+
+lambda:
+  memory_size: 2048
+  timeout: 60
+  invoke_mode: "RESPONSE_STREAM"
+  tracing_mode: true
+  cloudwatch_logs_retention_in_days: 30
+  logging_log_format: "JSON"
+
+imgproxy:
+  port: "8080"
+  use_s3: true
+  allow_insecure: true
+  allowed_sources: ""
+  fallback_image_path: ""
+  watermark_path: ""
+  max_redirects: 1
+  ttl: "31536000"
+  auto_webp: true
+  auto_avif: true
+  quality: "70"
+  format_quality: "jpeg=70,avif=40,webp=60"
+  use_etag: true
+  enable_debug_headers: true
+  log_format: "json"
+  log_level: "warn"
+  cloud_watch_service_name: "imgproxy"
+  cloud_watch_namespace: "imgproxy"
+  

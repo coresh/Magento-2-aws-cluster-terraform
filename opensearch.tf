@@ -24,6 +24,35 @@ resource "random_string" "opensearch" {
   upper          = false
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Parameterstore for opensearch env
+# # ---------------------------------------------------------------------------------------------------------------------#
+locals {
+  opensearch = {
+    OPENSEARCH_ADMIN_USERNAME                    = random_string.opensearch.result
+    OPENSEARCH_ADMIN_PASSWORD                    = random_password.opensearch.result
+    OPENSEARCH_DOMAIN_ARN                        = try(module.opensearch.arn, null)
+    OPENSEARCH_DOMAIN_ID                         = try(module.opensearch.domain_id, null)
+    OPENSEARCH_DOMAIN_ENDPOINT                   = try(module.opensearch.endpoint, null)
+    OPENSEARCH_DOMAIN_ENDPOINT_V2                = try(module.opensearch.endpoint_v2, null)
+    OPENSEARCH_DOMAIN_DASHBOARD_ENDPOINT         = try(module.opensearch.dashboard_endpoint, null)
+    OPENSEARCH_DOMAIN_DASHBOARD_ENDPOINT_V2      = try(module.opensearch.dashboard_endpoint_v2, null)
+    OPENSEARCH_DOMAIN_ENDPOINT_V2_HOSTED_ZONE_ID = try(module.opensearch.domain_endpoint_v2_hosted_zone_id, null)
+    OPENSEARCH_URL                               = "https://${try(module.opensearch.endpoint, "")}:443"
+    OPENSEARCH_DASHBOARD_URL                     = "https://${try(module.opensearch.dashboard_endpoint, "")}"
+  }
+}
+
+resource "aws_ssm_parameter" "opensearch" {
+  for_each    = local.opensearch
+  name        = "/${local.project}/${each.key}"
+  description = "OpenSearch parameter: ${each.key}"
+  type        = "String"
+  value       = each.value
+  tags = {
+    Service   = "opensearch"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Opensearch cluster
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "opensearch" {
@@ -98,7 +127,7 @@ module "opensearch" {
     subnet_ids = module.vpc.private_subnets
   }
   vpc_endpoints = {
-    one = {
+    endpoint = {
       subnet_ids = module.vpc.private_subnets
     }
   }
@@ -106,10 +135,10 @@ module "opensearch" {
   security_group_rules = {
     ingress_443 = {
       type        = "ingress"
-      description = "Opensearch HTTPS access from VPC"
       from_port   = 443
       to_port     = 443
       ip_protocol = "tcp"
+      description = "Opensearch HTTPS access from VPC"
       cidr_ipv4   = module.vpc.vpc_cidr_block
     }
   }

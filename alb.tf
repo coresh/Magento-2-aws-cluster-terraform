@@ -22,14 +22,14 @@ module "alb" {
       from_port   = 80
       to_port     = 80
       ip_protocol = "tcp"
-      cidr_ipv4   = each.key == "varnish" ? "0.0.0.0/0" : module.vpc.vpc_cidr_block
+      cidr_ipv4   = module.vpc.vpc_cidr_block
       description = "Allow HTTP"
     }
     https = {
       from_port   = 443
       to_port     = 443
       ip_protocol = "tcp"
-      cidr_ipv4   = each.key == "varnish" ? "0.0.0.0/0" : module.vpc.vpc_cidr_block
+      cidr_ipv4   = module.vpc.vpc_cidr_block
       description = "Allow HTTPS"
     }
   }

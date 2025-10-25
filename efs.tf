@@ -3,6 +3,32 @@
 //////////////////////////////////////////////////////[ EFS STORAGE MODULE ]//////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Parameterstore for efs env
+# # ---------------------------------------------------------------------------------------------------------------------#
+
+locals {
+  efs = merge([
+    for key, efs in module.efs : {
+      "${upper(key)}_EFS_ID"        = efs.id
+      "${upper(key)}_EFS_DNS_NAME"  = efs.dns_name
+      "${upper(key)}_EFS_ARN"       = efs.arn
+      "${upper(key)}_EFS_ACCESS_POINTS" = jsonencode(try(module.efs[key].access_points, null))
+      "${upper(key)}_EFS_MOUNT_TARGETS" = jsonencode(try(module.efs[key].mount_targets, null))
+    }
+  ])
+}
+
+resource "aws_ssm_parameter" "efs" {
+  for_each    = local.efs
+  name        = "/${local.project}/${each.key}"
+  description = "EFS parameter: ${each.key}"
+  type        = "String"
+  value       = each.value
+  tags = {
+    Service   = "efs"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create EFS storage and access points
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "efs" {

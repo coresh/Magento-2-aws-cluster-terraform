@@ -8,35 +8,6 @@
 resource "random_uuid" "secret_header" {}
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create a custom CloudFront Response Headers Policy
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudfront_response_headers_policy" "media" {
-  name = "${local.project}-response-headers-media"
-  cors_config {
-    access_control_allow_credentials = false
-    access_control_allow_headers { items = ["*"] }
-    access_control_allow_methods { items = ["GET"] }
-    access_control_allow_origins { items = ["*"] }
-    access_control_max_age_sec  = 600
-    origin_override             = false
-  }
-
-  custom_headers_config {
-    items {
-      header   = "x-aws-image-optimization"
-      value    = "v1.0"
-      override = true
-    }
-
-    items {
-      header   = "vary"
-      value    = "accept"
-      override = true
-    }
-  }
-}
-
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Cloudfront distribution with vpc origin and lambda
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "cloudfront" {
@@ -59,7 +30,7 @@ module "cloudfront" {
   }
   create_origin_access_control = true
   origin_access_control = {
-    lambda_media_optimization = {
+    lambda_imgproxy = {
       description      = "Cloudfront origin access control for ${local.project} lambda function"
       origin_type      = "lambda"
       signing_behavior = "always"
@@ -82,17 +53,10 @@ module "cloudfront" {
   }
 
   origin = {
-    s3_bucket_media_optimized = {
-      domain_name = module.s3["media-optimized"].s3_bucket_bucket_regional_domain_name
-      origin_id   = "${local.env.domain}-media-optimized"
-      s3_origin_config = {
-        origin_access_identity = "s3_bucket_media_optimized"
-      }
-    }
-    lambda_media_optimization = {
-      domain_name           = split("/",module.media_optimization_lambda_package.lambda_function_url)[2]
-      origin_id             = "${local.env.domain}-lambda-media-optimization"
-      origin_access_control = "lambda_media_optimization"
+    lambda_imgproxy = {
+      domain_name           = split("/",module.imgproxy.lambda_function_url)[2]
+      origin_id             = "${local.project}-lambda-imgproxy"
+      origin_access_control = "lambda_imgproxy"
       custom_origin_config = {
         http_port              = 80
         https_port             = 443
@@ -119,27 +83,17 @@ module "cloudfront" {
       ]
     }
   }
-  origin_group = {
-    media_optimization_group = {
-      failover_status_codes      = local.env.cloudfront.failover_criteria_status_codes
-      primary_member_origin_id   = "${local.env.domain}-media-optimized"
-      secondary_member_origin_id = "${local.env.domain}-lambda-media-optimization"
-      origin_id                  = "${local.env.domain}-media-optimization-group"
-    }
-  }
-
   ordered_cache_behavior = [ 
    {
     path_pattern     = local.env.cloudfront.path_pattern
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${local.env.domain}-media-optimization-group"	
+    target_origin_id = "lambda_imgproxy"	
     origin_request_policy_id   = "216adef6-5c7f-47e4-b989-5492eafa07d3"
-    response_headers_policy_id = aws_cloudfront_response_headers_policy.media.id
     cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6"
     viewer_protocol_policy     = "https-only"
     compress                   = false
-	use_forwarded_values       = false
+	  use_forwarded_values       = false
    },
    {
     path_pattern     = "admin_*"
@@ -150,7 +104,7 @@ module "cloudfront" {
     cache_policy_id            = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
     viewer_protocol_policy     = "https-only"
     compress                   = true
-	use_forwarded_values       = false
+	  use_forwarded_values       = false
    }
    ]
    
@@ -162,7 +116,7 @@ module "cloudfront" {
      cache_policy_id          = "658327ea-f89d-4fab-a63d-7e88639e58f6"
      viewer_protocol_policy   = "https-only"
      compress                 = true
-	 use_forwarded_values     = false
+	   use_forwarded_values     = false
   }
 
   logging_config = {

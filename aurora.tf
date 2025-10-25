@@ -14,6 +14,32 @@ resource "random_password" "database" {
   override_special = "!&#$"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Parameterstore for aurora env
+# # ---------------------------------------------------------------------------------------------------------------------#
+locals {
+  aurora = {
+    AURORA_CLUSTER_ARN            = try(module.aurora.arn, null)
+    AURORA_CLUSTER_ID             = try(module.aurora.id, null)
+    AURORA_CLUSTER_RESOURCE_ID    = try(module.aurora.cluster_resource_id, null)
+    AURORA_CLUSTER_ENDPOINT       = try(module.aurora.endpoint, null)
+    AURORA_READER_ENDPOINT        = try(module.aurora.reader_endpoint, null)
+    AURORA_DATABASE_NAME          = local.env.brand
+    AURORA_MASTER_USERNAME        = local.env.brand
+    AURORA_MASTER_PASSWORD        = try(module.aurora.master_password, null)
+  }
+}
+
+resource "aws_ssm_parameter" "aurora" {
+  for_each    = local.aurora
+  name        = "/${local.project}/${each.key}"
+  description = "Aurora parameter: ${each.key}"
+  type        = "String"
+  value       = each.value
+  tags = {
+    Service   = "aurora"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Aurora cluster
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "aurora" {
