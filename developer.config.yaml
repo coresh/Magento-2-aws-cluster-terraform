@@ -272,9 +272,11 @@ rds:
   maintenance_window: "Mon:03:00-Mon:04:00"
   backup_window: "01:00-02:00"
   enabled_cloudwatch_logs_exports: ["general", "error", "slowquery"]
+  create_db_option_group: true
+  create_db_parameter_group: true
   create_cloudwatch_log_group: true
-  monitoring_interval: 60
   create_monitoring_role: true
+  monitoring_interval: 60
   performance_insights_enabled: true
   performance_insights_retention_period: 7
   skip_final_snapshot: false
