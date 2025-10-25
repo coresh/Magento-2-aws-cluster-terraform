@@ -9,11 +9,11 @@
 locals {
   efs = merge([
     for efs_key, efs_output in module.efs : {
-      "${upper(efs_key)}_EFS_ID"            = efs_output.id
-      "${upper(efs_key)}_EFS_DNS_NAME"      = efs_output.dns_name
-      "${upper(efs_key)}_EFS_ARN"           = efs_output.arn
-      "${upper(efs_key)}_EFS_ACCESS_POINTS" = jsonencode(try(efs_output.access_points, null))
-      "${upper(efs_key)}_EFS_MOUNT_TARGETS" = jsonencode(try(efs_output.mount_targets, null))
+      "EFS_${upper(efs_key)}_ID"            = efs_output.id
+      "EFS_${upper(efs_key)}_DNS_NAME"      = efs_output.dns_name
+      "EFS_${upper(efs_key)}_ARN"           = efs_output.arn
+      "EFS_${upper(efs_key)}_ACCESS_POINTS" = jsonencode(try(efs_output.access_points, null))
+      "EFS_${upper(efs_key)}_MOUNT_TARGETS" = jsonencode(try(efs_output.mount_targets, null))
     }
   ]...)
 }
