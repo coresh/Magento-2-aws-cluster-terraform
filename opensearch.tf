@@ -33,10 +33,7 @@ locals {
     OPENSEARCH_DOMAIN_ARN                        = try(module.opensearch.domain_arn, null)
     OPENSEARCH_DOMAIN_ID                         = try(module.opensearch.domain_id, null)
     OPENSEARCH_DOMAIN_ENDPOINT                   = try(module.opensearch.domain_endpoint, null)
-    OPENSEARCH_DOMAIN_ENDPOINT_V2                = try(module.opensearch.domain_endpoint_v2, null)
     OPENSEARCH_DOMAIN_DASHBOARD_ENDPOINT         = try(module.opensearch.domain_dashboard_endpoint, null)
-    OPENSEARCH_DOMAIN_DASHBOARD_ENDPOINT_V2      = try(module.opensearch.domain_dashboard_endpoint_v2, null)
-    OPENSEARCH_DOMAIN_ENDPOINT_V2_HOSTED_ZONE_ID = try(module.opensearch.domain_endpoint_v2_hosted_zone_id, null)
     OPENSEARCH_URL                               = "https://${try(module.opensearch.domain_endpoint, "")}:443"
     OPENSEARCH_DASHBOARD_URL                     = "https://${try(module.opensearch.domain_dashboard_endpoint, "")}"
   }
