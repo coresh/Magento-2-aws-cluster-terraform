@@ -21,7 +21,7 @@ resource "aws_mq_broker" "this" {
   engine_type        = "RabbitMQ"
   engine_version     = local.env.rabbitmq.engine_version
   host_instance_type = local.env.rabbitmq.host_instance_type
-  security_groups    = [module.rabbitmq_security_group.id]
+  security_groups    = [module.rabbitmq_security_group.security_group_id]
   subnet_ids         = module.vpc.private_subnets
   user {
     username         = local.env.brand
@@ -123,3 +123,4 @@ module "rabbitmq_security_group" {
   }
 
 }
+
