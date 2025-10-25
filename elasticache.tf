@@ -18,13 +18,14 @@ resource "random_password" "elasticache" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 locals {
   elasticache = {
-    # Session Cluster
-    ELASTICACHE_SESSION_CLUSTER_ARN              = try(module.elasticache["session"].cluster_arn, null)
-    ELASTICACHE_SESSION_CLUSTER_ADDRESS          = try(module.elasticache["session"].cluster_address, null)
-    ELASTICACHE_SESSION_CONFIGURATION_ENDPOINT   = try(module.elasticache["session"].cluster_configuration_endpoint, null)
-    ELASTICACHE_CACHE_CLUSTER_ARN                = try(module.elasticache["cache"].cluster_arn, null)
-    ELASTICACHE_CACHE_CLUSTER_ADDRESS            = try(module.elasticache["cache"].cluster_address, null)
-    ELASTICACHE_CACHE_CONFIGURATION_ENDPOINT     = try(module.elasticache["cache"].cluster_configuration_endpoint, null)
+    ELASTICACHE_SESSION_CLUSTER_ARN              = try(module.elasticache["session"].replication_group_arn, null)
+    ELASTICACHE_SESSION_CLUSTER_ADDRESS          = try(module.elasticache["session"].replication_group_id, null)
+    ELASTICACHE_SESSION_PRIMARY_ENDPOINT_ADDRESS = try(module.elasticache["session"].replication_group_primary_endpoint_address, null)
+    ELASTICACHE_SESSION_READER_ENDPOINT_ADDRESS  = try(module.elasticache["session"].replication_group_reader_endpoint_address, null)
+    ELASTICACHE_CACHE_CLUSTER_ARN                = try(module.elasticache["cache"].replication_group_arn, null)
+    ELASTICACHE_CACHE_CLUSTER_ADDRESS            = try(module.elasticache["cache"].replication_group_id, null)
+    ELASTICACHE_CACHE_PRIMARY_ENDPOINT_ADDRESS   = try(module.elasticache["cache"].replication_group_primary_endpoint_address, null)
+    ELASTICACHE_CACHE_READER_ENDPOINT_ADDRESS    = try(module.elasticache["cache"].replication_group_reader_endpoint_address, null)
   }
 }
 
