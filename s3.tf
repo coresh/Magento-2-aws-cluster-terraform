@@ -14,7 +14,7 @@ locals {
       "S3_${upper(s3_key)}_BUCKET_DOMAIN_NAME"          = s3_output.s3_bucket_bucket_domain_name
       "S3_${upper(s3_key)}_BUCKET_REGIONAL_DOMAIN_NAME" = s3_output.s3_bucket_bucket_regional_domain_name
     }
-  ])
+  ]...)
 }
 
 resource "aws_ssm_parameter" "s3" {
