@@ -30,16 +30,16 @@ module "rds" {
   maintenance_window              = local.env.rds.maintenance_window
   backup_window                   = local.env.rds.backup_window
   enabled_cloudwatch_logs_exports = local.env.rds.enabled_cloudwatch_logs_exports
-  create_cloudwatch_log_group           = local.env.rds.create_cloudwatch_log_group
+  create_cloudwatch_log_group           = local.env.rds.create ? local.env.rds.create_cloudwatch_log_group : false
   skip_final_snapshot                   = local.env.rds.skip_final_snapshot
   deletion_protection                   = local.env.rds.deletion_protection
   performance_insights_enabled          = local.env.rds.performance_insights_enabled
   performance_insights_retention_period = local.env.rds.performance_insights_retention_period
-  create_monitoring_role                = local.env.rds.create_monitoring_role
+  create_monitoring_role                = local.env.rds.create ? local.env.rds.create_monitoring_role : false
   monitoring_interval                   = local.env.rds.monitoring_interval
-  create_db_option_group    = true
+  create_db_option_group    = local.env.rds.create ? local.env.rds.create_db_option_group : false
   option_group_name         = "${local.project}-rds-options"
-  create_db_parameter_group = true
+  create_db_parameter_group = local.env.rds.create ? local.env.rds.create_db_parameter_group : false
   parameter_group_name      = "${local.project}-rds-parameters"
   parameters = [
     for name, value in local.env.rds.parameters : {
