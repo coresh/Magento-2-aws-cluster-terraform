@@ -55,7 +55,6 @@ module "autoscaling" {
     instances_distribution = {
       on_demand_base_capacity                  = each.value.min_size
       on_demand_percentage_above_base_capacity = 0
-      on_demand_allocation_strategy            = local.env.asg.mixed_instances_policy.on_demand_allocation_strategy
       spot_allocation_strategy                 = local.env.asg.mixed_instances_policy.spot_allocation_strategy
     }
     launch_template = {
