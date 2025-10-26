@@ -14,7 +14,7 @@ module "imgproxy" {
   description    = "Imgproxy image processing service for ${local.env.domain}"
   package_type   = "Image"
   create_package = false
-  image_uri      = "ghcr.io/imgproxy/imgproxy:latest-arm64"
+  image_uri      = "${module.ecr.repository_url}/${local.env.lambda.imgproxy}"
   memory_size    = local.env.lambda.memory_size
   timeout        = local.env.lambda.timeout
   architectures  = ["arm64"]
@@ -39,26 +39,12 @@ module "imgproxy" {
     IMGPROXY_CLOUD_WATCH_NAMESPACE     = local.env.imgproxy.cloud_watch_namespace
     IMGPROXY_CLOUD_WATCH_REGION        = data.aws_region.current.region
   }
-  create_lambda_function_url = true
-  authorization_type         = "AWS_IAM"
-  allowed_triggers = {
-    Cloudfront = {
-      principal  = "cloudfront.amazonaws.com"
-      source_arn = module.cloudfront.cloudfront_distribution_arn
-    }
-  }
+  create_lambda_function_url        = true
+  authorization_type                = "AWS_IAM"
   invoke_mode                       = local.env.lambda.invoke_mode
   tracing_mode                      = local.env.lambda.tracing_mode
   cloudwatch_logs_retention_in_days = local.env.lambda.cloudwatch_logs_retention_in_days
   logging_log_format                = local.env.lambda.logging_log_format
-  cors = {
-    allow_credentials = false
-    allow_origins     = ["*"]
-    allow_methods     = ["GET", "HEAD", "OPTIONS"]
-    allow_headers     = ["*"]
-    expose_headers    = ["*"]
-    max_age           = 86400
-  }
   attach_policy_json = true
   policy_json = jsonencode({
     Version = "2012-10-17"
