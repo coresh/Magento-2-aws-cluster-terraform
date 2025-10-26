@@ -505,6 +505,7 @@ lambda:
   tracing_mode: "Active"
   cloudwatch_logs_retention_in_days: 30
   logging_log_format: "JSON"
+  imgproxy: "imgproxy:latest"
 
 imgproxy:
   port: "8080"
