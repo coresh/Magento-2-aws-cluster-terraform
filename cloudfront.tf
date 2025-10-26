@@ -55,7 +55,6 @@ module "cloudfront" {
   origin = {
     lambda_imgproxy = {
       domain_name           = split("/",module.imgproxy.lambda_function_url)[2]
-      origin_id             = "${local.project}-lambda-imgproxy"
       origin_access_control = "lambda_imgproxy"
       custom_origin_config = {
         http_port              = 80
