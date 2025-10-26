@@ -511,7 +511,9 @@ imgproxy:
   port: "8080"
   use_s3: true
   allow_insecure: true
-  allowed_sources: ""
+  allow_origin: *domain
+  allowed_sources: "s3://,local://"
+  allowed_processing_options: "rs,fit,wm,soea"
   fallback_image_path: ""
   watermark_path: ""
   max_redirects: 1
