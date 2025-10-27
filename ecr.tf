@@ -13,7 +13,6 @@ module "ecr" {
   repository_type   = "private"
   repository_name   = "${local.project}-images"
   repository_image_tag_mutability    = "MUTABLE"
-  repository_image_scan_on_push      = true
   repository_force_delete            = true
   create_repository_policy           = true
   attach_repository_policy           = true
@@ -36,4 +35,19 @@ module "ecr" {
   tags = {
     Name = "${local.project}-images"
   }
+}
+
+module "ecr_registry_config" {
+  source            = "terraform-aws-modules/ecr/aws"
+  version           = "3.1.1"
+  create_repository = false
+  manage_registry_scanning_configuration = true
+  registry_scan_type  = "BASIC"
+  registry_scan_rules = [{
+    scan_frequency = "SCAN_ON_PUSH"
+    filter = [{
+      filter      = "*"
+      filter_type = "WILDCARD"
+    }]
+  }]
 }
