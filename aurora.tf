@@ -30,7 +30,7 @@ locals {
 }
 
 resource "aws_ssm_parameter" "aurora" {
-  for_each    = local.aurora
+  for_each    = local.env.aurora.create ? local.aurora : {}
   name        = "/${local.project}/${each.key}"
   description = "Aurora parameter: ${each.key}"
   type        = "String"
