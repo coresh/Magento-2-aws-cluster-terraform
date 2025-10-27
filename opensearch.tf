@@ -121,11 +121,11 @@ module "opensearch" {
     auto_software_update_enabled = local.env.opensearch.auto_software_update_enabled
   }
   vpc_options = {
-    subnet_ids = module.vpc.private_subnets
+    subnet_ids = local.env.vpc.availability_zone_total > 1 && local.env.opensearch.instance_count > 1 ? module.vpc.private_subnets : slice(module.vpc.private_subnets, 0, 1)
   }
   vpc_endpoints = {
     endpoint = {
-      subnet_ids = module.vpc.private_subnets
+      subnet_ids = local.env.vpc.availability_zone_total > 1 && local.env.opensearch.instance_count > 1 ? module.vpc.private_subnets : slice(module.vpc.private_subnets, 0, 1)
     }
   }
   security_group_name  = "${local.project}-opensearch"
