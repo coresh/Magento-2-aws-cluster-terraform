@@ -266,8 +266,8 @@ rds:
   max_allocated_storage: 100
   port: 3306
   multi_az: false
-  manage_master_user_password: true
-  manage_master_user_password_rotation: true
+  manage_master_user_password: false
+  manage_master_user_password_rotation: false
   master_user_password_rotation_automatically_after_days: 30
   maintenance_window: "Mon:03:00-Mon:04:00"
   backup_window: "01:00-02:00"
