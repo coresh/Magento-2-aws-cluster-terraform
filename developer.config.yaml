@@ -418,22 +418,6 @@ asg:
 
 s3:
   bucket:
-    lambda:
-      versioning: true
-      eventbridge: false
-      policy: "lambda_bucket_policy"
-      intelligent_tiering:
-        status: "Disabled"
-      lifecycle_rule:
-        status: "Disabled"
-    logs:
-      versioning: false
-      eventbridge: false
-      policy: "logs_bucket_policy"
-      intelligent_tiering:
-        status: "Enabled"
-      lifecycle_rule:
-        status: "Enabled"
     media:
       versioning: false
       eventbridge: false
@@ -458,6 +442,14 @@ s3:
         status: "Disabled"
       lifecycle_rule:
         status: "Disabled"
+    logs:
+      versioning: false
+      eventbridge: false
+      policy: "logs_bucket_policy"
+      intelligent_tiering:
+        status: "Enabled"
+      lifecycle_rule:
+        status: "Enabled"
 
 efs:
   var:
