@@ -9,8 +9,7 @@
 module "alb" {
   source                     = "terraform-aws-modules/alb/aws"
   version                    = "10.0.0"
-  for_each                   = local.env.ec2
-  name                       = "${local.project}-${each.key}-alb"
+  name                       = "${local.project}-alb"
   internal                   = true
   vpc_id                     = module.vpc.vpc_id
   subnets                    = module.vpc.private_subnets
@@ -44,17 +43,17 @@ module "alb" {
 
   access_logs = {
     bucket = module.s3["logs"].s3_bucket_id
-    prefix = "${each.key}-ALB_logs"
+    prefix = "ALB_logs"
   }
 
   target_groups = {
-    (each.key) = {
-      name                 = "${local.project}-${each.key}-tg"
+    varnish = {
+      name                 = "${local.project}-varnish-tg"
       port                 = 80
       protocol             = "HTTP"
       vpc_id               = module.vpc.vpc_id
       target_type          = local.env.alb.target_type
-      deregistration_delay = 300
+      deregistration_delay = 10
       create_attachment    = false
       health_check = {
         path                = "${local.env.alb.health_check_path}"
@@ -71,34 +70,10 @@ module "alb" {
     http = {
       port     = 80
       protocol = "HTTP"
-      fixed_response = {
-        content_type = "text/plain"
-        message_body = local.env.alb.fixed_response.message_body
-        status_code  = local.env.alb.fixed_response.status_code
-      }
-      rules = {
-        main = {
-          priority = 2
-          actions = [{
-            type = "forward"
-            forward = {
-              target_group_key = each.key
-            }
-          }]
-          conditions = [
-            {
-              host_header = {
-                values = [local.env.domain]
-              }
-            },
-            {
-              http_header = {
-                http_header_name = "X-${title(local.env.brand)}-Secret"
-                values           = [random_uuid.secret_header.result]
-              }
-            }
-          ]
-        }
+      redirect = {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
       }
     }
     https = {
@@ -117,7 +92,7 @@ module "alb" {
           actions = [{
             type = "forward"
             forward = {
-              target_group_key = each.key
+              target_group_key = varnish
             }
           }]
           conditions = [
@@ -128,7 +103,7 @@ module "alb" {
             },
             {
               http_header = {
-                http_header_name = "X-${title(local.env.brand)}-Secret"
+                http_header_name = "X-Cloudfront-Secret"
                 values           = [random_uuid.secret_header.result]
               }
             }
