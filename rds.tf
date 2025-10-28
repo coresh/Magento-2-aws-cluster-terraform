@@ -3,6 +3,31 @@
 ////////////////////////////////////////////////////////[ RDS MODULE ]////////////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Parameterstore for RDS env
+# # ---------------------------------------------------------------------------------------------------------------------#
+locals {
+  rds = {
+    DATABASE_PASSWORD    = random_password.database.result
+    DATABASE_ARN         = try(module.rds.db_instance_arn, null)
+    DATABASE_ENDPOINT    = try(module.rds.db_instance_endpoint, null)
+    DATABASE_IDENTIFIER  = try(module.rds.db_instance_identifier, null)
+    DATABASE_NAME        = try(module.rds.db_instance_name, null)
+    DATABASE_PORT        = try(module.rds.db_instance_port, null)
+  }
+}
+
+resource "aws_ssm_parameter" "rds" {
+  for_each    = local.rds
+  name        = "/${local.project}/${each.key}"
+  description = "RDS parameter: ${each.key}"
+  type        = "String"
+  value       = each.value
+  tags = {
+    Service   = "rds"
+  }
+}
+
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create RDS Instance database
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "rds" { 
@@ -20,8 +45,8 @@ module "rds" {
   manage_master_user_password          = local.env.rds.manage_master_user_password
   manage_master_user_password_rotation = local.env.rds.manage_master_user_password_rotation
   master_user_password_rotation_automatically_after_days = local.env.rds.master_user_password_rotation_automatically_after_days
-  db_name  = local.env.brand
-  username = local.env.brand
+  db_name  = local.env.rds.db_name
+  username = local.env.rds.username
   password = random_password.database.result
   port     = local.env.rds.port
   db_subnet_group_name   = module.vpc.database_subnet_group_name
