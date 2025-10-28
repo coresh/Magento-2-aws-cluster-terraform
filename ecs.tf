@@ -96,6 +96,13 @@ module "ecs_service" {
           protocol      = local.env.ecs[each.key].protocol
         }
       ]
+      mountPoints = [
+        {
+          sourceVolume  = "magento"
+          containerPath = "/home/${local.env.brand}/public"
+          readOnly      = false
+        }
+      ]
       essential   = true
       environment = [{}]
       readonly_root_filesystem               = true
@@ -105,6 +112,18 @@ module "ecs_service" {
       cloudwatch_log_group_retention_in_days = 7
       log_configuration = {
         logDriver = "awslogs"
+      }
+    }
+  }
+  volume {
+    name = "magento"
+    efs_volume_configuration = {
+      file_system_id     = aws_efs_file_system.this.id
+      root_directory     = "/"
+      transit_encryption = "ENABLED"
+      authorization_config = {
+        access_point_id = aws_efs_access_point.this.id
+        iam             = "ENABLED"
       }
     }
   }
