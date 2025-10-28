@@ -7,22 +7,36 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 
 locals {
-
   user_data = <<-END
     #!/bin/bash
-    ## Base system updates
-    export DEBIAN_FRONTEND=noninteractive
+    ### install docker
+    . /etc/os-release
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/$ID/gpg -o /etc/apt/keyrings/docker.asc
+    chmod a+r /etc/apt/keyrings/docker.asc
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/$ID $VERSION_CODENAME stable" > /etc/apt/sources.list.d/docker.list
     apt-get update
-    apt-get upgrade -y
-    apt-get install -y ca-certificates curl syslog-ng
-    ## install ssm manager
+    apt-get upgrade -yq
+    apt-get install -yq syslog-ng docker-ce docker-ce-cli containerd.io
+    export DEBIAN_FRONTEND=noninteractive
+    ### ecs cluster configuration
+    mkdir -p /etc/ecs
+    echo "ECS_CLUSTER=${local.project}-ecs-cluster" > /etc/ecs/ecs.config
+    echo "ECS_LOGLEVEL=debug" >> /etc/ecs/ecs.config
+    echo "ECS_ENABLE_TASK_IAM_ROLE=true" >> /etc/ecs/ecs.config
+    ### install ecs agent
+    cd /tmp/
+    curl -O https://s3.${data.aws_region.current.region}.amazonaws.com/amazon-ecs-agent-${data.aws_region.current.region}/amazon-ecs-init-latest.$(dpkg --print-architecture).deb
+    dpkg -i amazon-ecs-init-latest.$(dpkg --print-architecture).deb
+    systemctl enable ecs
+    systemctl start ecs
+    ### install ssm manager
     cd /tmp/
     curl -O https://s3.${data.aws_region.current.region}.amazonaws.com/amazon-ssm-${data.aws_region.current.region}/latest/debian_$(dpkg --print-architecture)/amazon-ssm-agent.deb
     dpkg -i amazon-ssm-agent.deb
     systemctl enable amazon-ssm-agent
     systemctl start amazon-ssm-agent
   END
-  
 }
 
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -45,10 +59,11 @@ module "autoscaling" {
   protect_from_scale_in           = local.env.asg.protect_from_scale_in
   ignore_desired_capacity_changes = true
   create_iam_instance_profile     = true
-  iam_role_name                   = "${local.project}-EC2-Role"
-  iam_role_description            = "Role for EC2 in ${local.project}"
+  iam_role_name                   = "${local.project}-ECS-EC2-Role"
+  iam_role_description            = "Role for ECS EC2 in ${local.project}"
   iam_role_policies = {
-    AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+    AmazonEC2ContainerServiceforEC2Role = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+    AmazonSSMManagedInstanceCore        = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   }
   use_mixed_instances_policy = local.env.asg.use_mixed_instances_policy
   mixed_instances_policy = {
@@ -76,12 +91,6 @@ module "autoscaling" {
       ]
     }
   }
-  traffic_source_attachments = {
-    alb = {
-      traffic_source_identifier = module.alb[each.key].target_groups[each.key].arn
-      traffic_source_type       = "elbv2"
-    }
-  }
   ebs_optimized     = true
   enable_monitoring = true
   block_device_mappings = [{
@@ -99,7 +108,7 @@ module "autoscaling" {
     resource_type = "instance"
     tags = {
         Name = "${local.project}-${each.key}-ec2"
-        InstanceName = each.key
+        Shortname = each.key
         Hostname = "${each.key}.${local.env.brand}.internal"
       }
     },
@@ -110,21 +119,6 @@ module "autoscaling" {
       }
     }
   ]
-  scaling_policies = {
-    cpu-target-tracking = {
-      name               = "${local.project}-cpu-target-tracking"
-      policy_type        = "TargetTrackingScaling"
-      adjustment_type    = "ChangeInCapacity"
-      estimated_instance_warmup = local.env.asg.instance_warmup
-      target_tracking_configuration = {
-        predefined_metric_specification = {
-          predefined_metric_type = local.env.asg.target_tracking_configuration.predefined_metric_type
-        }
-        target_value     = local.env.asg.target_tracking_configuration.target_value
-        disable_scale_in = local.env.asg.target_tracking_configuration.disable_scale_in
-      }
-    }
-  }
   instance_refresh = {
     strategy = "Rolling"
     preferences = {
@@ -138,6 +132,9 @@ module "autoscaling" {
     http_tokens                 = "required"
     http_put_response_hop_limit = 1
     instance_metadata_tags      = "enabled"
+  }
+  autoscaling_group_tags = {
+    AmazonECSManaged = true
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
