@@ -23,8 +23,8 @@ locals {
     AURORA_CLUSTER_RESOURCE_ID    = try(module.aurora.cluster_resource_id, null)
     AURORA_CLUSTER_ENDPOINT       = try(module.aurora.cluster_endpoint, null)
     AURORA_READER_ENDPOINT        = try(module.aurora.cluster_reader_endpoint, null)
-    AURORA_DATABASE_NAME          = local.env.brand
-    AURORA_MASTER_USERNAME        = local.env.brand
+    AURORA_DATABASE_NAME          = try(module.aurora.cluster_database_name, null)
+    AURORA_MASTER_USERNAME        = try(module.aurora.cluster_master_username, null)
     AURORA_MASTER_PASSWORD        = try(module.aurora.cluster_master_password, null)
   }
 }
