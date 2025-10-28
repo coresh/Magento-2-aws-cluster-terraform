@@ -123,11 +123,6 @@ module "opensearch" {
   vpc_options = {
     subnet_ids = local.env.vpc.availability_zone_total > 1 && local.env.opensearch.instance_count > 1 ? module.vpc.private_subnets : slice(module.vpc.private_subnets, 0, 1)
   }
-  vpc_endpoints = {
-    endpoint = {
-      subnet_ids = local.env.vpc.availability_zone_total > 1 && local.env.opensearch.instance_count > 1 ? module.vpc.private_subnets : slice(module.vpc.private_subnets, 0, 1)
-    }
-  }
   security_group_name  = "${local.project}-opensearch"
   security_group_rules = {
     ingress_443 = {
