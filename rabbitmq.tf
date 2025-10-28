@@ -13,6 +13,30 @@ resource "random_password" "rabbitmq" {
   min_special      = 1
   override_special = "!&#$"
 }
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Parameterstore for RabbitMQ env
+# # ---------------------------------------------------------------------------------------------------------------------#
+locals {
+  rabbitmq = {
+    RABBITMQ_PASSWORD      = random_password.rabbitmq.result
+    RABBITMQ_ARN           = try(aws_mq_broker.this.domain_arn, null)
+    RABBITMQ_ID            = try(aws_mq_broker.this.id, null)
+    RABBITMQ_ENDPOINT      = try(trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671"), null)
+    RABBITMQ_DASHBOARD_URL = try(aws_mq_broker.this.instances.0.console_url, null)
+  }
+}
+
+resource "aws_ssm_parameter" "rabbitmq" {
+  for_each    = local.rabbitmq
+  name        = "/${local.project}/${each.key}"
+  description = "RabbitMQ parameter: ${each.key}"
+  type        = "String"
+  value       = each.value
+  tags = {
+    Service   = "rabbitmq"
+  }
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create RabbitMQ - queue message broker
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -124,6 +148,7 @@ module "rabbitmq_security_group" {
   }
 
 }
+
 
 
 
