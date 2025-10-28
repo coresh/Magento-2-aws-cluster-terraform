@@ -199,6 +199,8 @@ aurora:
   manage_master_user_password: false
   manage_master_user_password_rotation: false
   master_user_password_rotation_automatically_after_days: 30
+  master_username: *brand
+  database_name: *brand
   db_cluster_parameter_group_family: "aurora-mysql8.0"
   copy_tags_to_snapshot: true
   backup_retention_period: "30"
@@ -266,6 +268,8 @@ rds:
   max_allocated_storage: 100
   port: 3306
   multi_az: false
+  db_name: *brand
+  username: *brand
   manage_master_user_password: false
   manage_master_user_password_rotation: false
   master_user_password_rotation_automatically_after_days: 30
