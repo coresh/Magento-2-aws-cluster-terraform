@@ -66,8 +66,8 @@ module "ecs_service" {
     enable   = true
     rollback = true
   }
-  cpu    = local.env.ecs.cluster[each.key].cpu
-  memory = local.env.ecs.cluster[each.key].memory
+  cpu    = local.env.ecs.cluster.cpu
+  memory = local.env.ecs.cluster.memory
   service_connect_configuration = {
     enabled = each.key == "backend" ? true : false
     namespace = aws_service_discovery_private_dns_namespace.main.arn
