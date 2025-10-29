@@ -66,18 +66,18 @@ module "ecs_service" {
     enable   = true
     rollback = true
   }
-  cpu    = local.env.ecs[each.key].cpu
-  memory = local.env.ecs[each.key].memory
+  cpu    = local.env.ecs.cluster[each.key].cpu
+  memory = local.env.ecs.cluster[each.key].memory
   service_connect_configuration = {
     enabled = each.key == "backend" ? true : false
     namespace = aws_service_discovery_private_dns_namespace.main.arn
     service = {
       client_alias = {
         port     = local.env.ecs.container[each.key].port
-        dns_name = local.env.ecs.container[each.key].name
+        dns_name = each.key
       }
-      port_name      = local.env.ecs.container[each.key].name
-      discovery_name = local.env.ecs.container[each.key].name
+      port_name      = each.key
+      discovery_name = each.key
     }
   }
   runtime_platform = {
@@ -91,7 +91,7 @@ module "ecs_service" {
       memory = local.env.ecs.container[each.key].memory
       port_mappings = [
         {
-          name          = local.env.ecs.container[each.key].name
+          name          = each.key
           containerPort = local.env.ecs.container[each.key].port
           protocol      = local.env.ecs.container[each.key].protocol
         }
@@ -131,7 +131,7 @@ module "ecs_service" {
   load_balancer = each.key == "varnish" ? {
     service = {
       target_group_arn = module.alb.target_groups.arn
-      container_name   = local.env.ecs.container[each.key].name
+      container_name   = each.key
       container_port   = 80
     }
   } : null
