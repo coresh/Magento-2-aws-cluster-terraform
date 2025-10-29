@@ -7,7 +7,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "ecs_cluster" {
   source       = "terraform-aws-modules/ecs/aws//modules/cluster"
-  for_each     = local.env.ec2
+  for_each     = local.env.ecs.container
   name         = "${local.project}-${each.key}-ecs-cluster"
   autoscaling_capacity_providers = {
     (each.key) = {
@@ -16,9 +16,9 @@ module "ecs_cluster" {
       managed_termination_protection = "ENABLED"
       managed_scaling = {
         status                    = "ENABLED"
-        maximum_scaling_step_size = local.env.asg.maximum_scaling_step_size
-        minimum_scaling_step_size = local.env.ec2
-        target_capacity           = local.env.ec2
+        minimum_scaling_step_size = local.env.ecs.cluster.minimum_scaling_step_size
+        maximum_scaling_step_size = local.env.ecs.cluster.maximum_scaling_step_size
+        target_capacity           = local.env.ecs.cluster.target_capacity
       }
     }
   }
@@ -50,7 +50,7 @@ resource "aws_service_discovery_service" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "ecs_service" {
   source      = "terraform-aws-modules/ecs/aws//modules/service"
-  for_each    = local.env.ec2
+  for_each    = local.env.ecs.container
   name        = "${local.project}-${each.key}-ecs-service"
   cluster_arn = module.ecs_cluster[each.key].arn
   enable_execute_command     = true
@@ -66,45 +66,46 @@ module "ecs_service" {
     enable   = true
     rollback = true
   }
-  cpu    = local.env.ecs[each.key].cluster_cpu
-  memory = local.env.ecs[each.key].cluster_memory
+  cpu    = local.env.ecs[each.key].cpu
+  memory = local.env.ecs[each.key].memory
   service_connect_configuration = {
     enabled = each.key == "backend" ? true : false
     namespace = aws_service_discovery_private_dns_namespace.main.arn
     service = {
       client_alias = {
-        port     = local.env.ecs[each.key].container_port
-        dns_name = "backend"
+        port     = local.env.ecs.container[each.key].port
+        dns_name = local.env.ecs.container[each.key].name
       }
-      port_name      = "backend"
-      discovery_name = "backend"
+      port_name      = local.env.ecs.container[each.key].name
+      discovery_name = local.env.ecs.container[each.key].name
     }
   }
   runtime_platform = {
-      cpu_architecture = local.env.ecs.cpu_architecture
+      cpu_architecture = local.env.ecs.cluster.cpu_architecture
       operating_system_family = "LINUX"
   }
   container_definitions = {
     (each.key) = {
-      image  = local.env.ecs[each.key].docker_image
-      cpu    = local.env.ecs[each.key].container_cpu
-      memory = local.env.ecs[each.key].container_memory
+      image  = local.env.ecs.container[each.key].image
+      cpu    = local.env.ecs.container[each.key].cpu
+      memory = local.env.ecs.container[each.key].memory
       port_mappings = [
         {
-          name          = local.env.ecs[each.key].container_name
-          containerPort = local.env.ecs[each.key].container_port
-          protocol      = local.env.ecs[each.key].protocol
+          name          = local.env.ecs.container[each.key].name
+          containerPort = local.env.ecs.container[each.key].port
+          protocol      = local.env.ecs.container[each.key].protocol
         }
       ]
       mountPoints = [
         {
-          sourceVolume  = "magento"
+          sourceVolume  = "public"
           containerPath = "/home/${local.env.brand}/public"
           readOnly      = false
         }
       ]
-      essential   = true
-      environment = [{}]
+      workingDirectory = "/home/${local.env.brand}/public/current"
+      essential        = true
+      environment      = [{}]
       readonly_root_filesystem               = true
       enable_cloudwatch_logging              = true
       create_cloudwatch_log_group            = true
@@ -116,10 +117,10 @@ module "ecs_service" {
     }
   }
   volume {
-    name = "magento"
+    name = "public"
     efs_volume_configuration = {
       file_system_id     = aws_efs_file_system.this.id
-      root_directory     = "/"
+      root_directory     = "/public"
       transit_encryption = "ENABLED"
       authorization_config = {
         access_point_id = aws_efs_access_point.this.id
@@ -130,7 +131,7 @@ module "ecs_service" {
   load_balancer = each.key == "varnish" ? {
     service = {
       target_group_arn = module.alb.target_groups.arn
-      container_name   = varnish
+      container_name   = local.env.ecs.container[each.key].name
       container_port   = 80
     }
   } : null
