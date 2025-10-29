@@ -45,7 +45,7 @@ locals {
 module "autoscaling" {
   source           = "terraform-aws-modules/autoscaling/aws"
   version          = "9.0.1"
-  for_each         = local.env.ec2
+  for_each         = local.env.ecs.container
   name             = "${local.project}-${each.key}-asg"
   image_id         = data.aws_ami.this.id
   instance_type    = each.value.instance_type
@@ -143,7 +143,7 @@ module "autoscaling" {
 module "autoscaling_security_group" {
   source      = "terraform-aws-modules/security-group/aws"
   version     = "5.3.0"
-  for_each    = local.env.ec2
+  for_each    = local.env.ecs.container
   name        = "${local.project}-asg-${each.key}-security-group"
   description = "Autoscaling security group"
   vpc_id      = module.vpc.vpc_id
