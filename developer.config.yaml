@@ -39,22 +39,8 @@ nat_gateway:
   volume_size: 10
   firewall: true
 
-ec2:
-  varnish:
-    instance_type: "t4g.micro"
-    volume_size: 10
-    desired_capacity: *availability_zone_total
-    min_size: *availability_zone_total
-    max_size: *availability_zone_total
-  backend:
-    instance_type: "t4g.micro"
-    volume_size: 25
-    desired_capacity: *availability_zone_total
-    min_size: *availability_zone_total
-    max_size: *availability_zone_total
-
 managed_services: &create true
-  
+
 elasticache:
   create: *create
   engine: "valkey"
@@ -335,7 +321,7 @@ rds:
 alb:
   ssl_policy: "ELBSecurityPolicy-TLS13-1-2-Res-2021-06"
   enable_deletion_protection: false
-  target_type: "instance"
+  target_type: "ip"
   health_check_path: "/health_check.php"
   fixed_response:
     status_code: "418"
@@ -378,18 +364,45 @@ alb:
       threshold: "5"
       dimensions: "LoadBalancer"
 
+ecs:
+  cluster:
+    minimum_scaling_step_size: 1
+    maximum_scaling_step_size: 6
+    target_capacity: 70
+    cpu: 2048
+    memory: 4096
+    cpu_architecture: "ARM64"
+  container:
+    varnish:
+      image: "varnish:latest"
+      port: 80
+      protocol: "tcp"
+      instance_type: "t4g.micro"
+      volume_size: 10
+      cpu: 2048
+      memory: 4096
+      desired_capacity: 1
+      min_size: 1
+      max_size: 2
+    backend:
+      image: "backend:latest"
+      port: 80
+      protocol: "tcp"
+      instance_type: "t4g.micro"
+      volume_size: 25
+      cpu: 2048
+      memory: 4096
+      desired_capacity: 2
+      min_size: 2
+      max_size: 6
+
 asg:
   health_check_type: "EC2"
   protect_from_scale_in: false
-  target_tracking_configuration:
-    predefined_metric_type: "ASGAverageCPUUtilization"
-    target_value: "70.0"
-    disable_scale_in: false
-  instance_warmup: 120
+  instance_warmup: 60
   use_mixed_instances_policy: true
   mixed_instances_policy:
-    on_demand_allocation_strategy: "prioritized"
-    spot_allocation_strategy: "capacity-optimized"
+    spot_allocation_strategy: "price-capacity-optimized"
   override:
     instance_requirements:
       vcpu_count:
@@ -456,11 +469,15 @@ s3:
         status: "Enabled"
 
 efs:
-  var:
+  public:
     uid: "1001"
     gid: "1002"
     permissions: "2770"
-  media:
+  shared:
+    uid: "1001"
+    gid: "1002"
+    permissions: "2770"
+  releases:
     uid: "1001"
     gid: "1002"
     permissions: "2770"
