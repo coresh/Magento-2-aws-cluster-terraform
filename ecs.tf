@@ -105,7 +105,7 @@ module "ecs_service" {
       essential        = true
       secrets = [for secret in local.env.ecs[each.key].secrets : {
         name      = secret
-        valueFrom = "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${secret}"
+        valueFrom = "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${secret}"
       }]
       readonly_root_filesystem               = true
       enable_cloudwatch_logging              = true
