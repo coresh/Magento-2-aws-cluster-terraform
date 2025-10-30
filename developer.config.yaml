@@ -384,6 +384,7 @@ ecs:
       desired_capacity: 1
       min_size: 1
       max_size: 2
+      secrets:
     backend:
       image: "backend:latest"
       port: 80
@@ -395,6 +396,9 @@ ecs:
       desired_capacity: 2
       min_size: 2
       max_size: 6
+      secrets:
+        - DATABASE_IDENTIFIER
+        - DATABASE_PASSWORD
 
 asg:
   health_check_type: "EC2"
