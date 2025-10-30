@@ -92,7 +92,7 @@ module "alb" {
           actions = [{
             type = "forward"
             forward = {
-              target_group_key = varnish
+              target_group_key = "varnish"
             }
           }]
           conditions = [
