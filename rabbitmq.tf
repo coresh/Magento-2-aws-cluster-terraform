@@ -20,7 +20,7 @@ resource "random_password" "rabbitmq" {
 locals {
   rabbitmq = {
     RABBITMQ_PASSWORD      = random_password.rabbitmq.result
-    RABBITMQ_ARN           = try(aws_mq_broker.this.domain_arn, null)
+    RABBITMQ_ARN           = try(aws_mq_broker.this.arn, null)
     RABBITMQ_ID            = try(aws_mq_broker.this.id, null)
     RABBITMQ_ENDPOINT      = try(trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671"), null)
     RABBITMQ_DASHBOARD_URL = try(aws_mq_broker.this.instances.0.console_url, null)
@@ -148,6 +148,7 @@ module "rabbitmq_security_group" {
   }
 
 }
+
 
 
 
