@@ -81,8 +81,8 @@ module "ecs_service" {
     }
   }
   runtime_platform = {
-      cpu_architecture = local.env.ecs.cluster.cpu_architecture
-      operating_system_family = "LINUX"
+    cpu_architecture = local.env.ecs.cluster.cpu_architecture
+    operating_system_family = "LINUX"
   }
   container_definitions = {
     (each.key) = {
@@ -96,16 +96,17 @@ module "ecs_service" {
           protocol      = local.env.ecs.container[each.key].protocol
         }
       ]
-      mountPoints = [
-        {
-          sourceVolume  = "public"
-          containerPath = "/home/${local.env.brand}/public"
-          readOnly      = false
-        }
-      ]
-      workingDirectory = "/home/${local.env.brand}/public/current"
+      mountPoints = each.key == "varnish" ? [] : [for name, config in local.env.efs : {
+        sourceVolume  = name
+        containerPath = "/home/${local.env.brand}/${name}"
+        readOnly      = config.read_only
+      }]
+      workingDirectory = each.key == "backend" ? "/home/${local.env.brand}/public/current" : null
       essential        = true
-      environment      = [{}]
+      secrets = [for secret in local.env.ecs[each.key].secrets : {
+        name      = secret
+        valueFrom = "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${secret}"
+      }]
       readonly_root_filesystem               = true
       enable_cloudwatch_logging              = true
       create_cloudwatch_log_group            = true
@@ -116,18 +117,18 @@ module "ecs_service" {
       }
     }
   }
-  volume {
-    name = "public"
+  volume = each.key == "varnish" ? [] : [for name, config in local.env.efs : {
+    name = name
     efs_volume_configuration = {
-      file_system_id     = aws_efs_file_system.this.id
-      root_directory     = "/public"
+      file_system_id     = module.efs.id
+      root_directory     = module.efs.access_points[name].root_directory_path
       transit_encryption = "ENABLED"
       authorization_config = {
-        access_point_id = aws_efs_access_point.this.id
+        access_point_id = module.efs.access_points[name].id
         iam             = "ENABLED"
       }
     }
-  }
+  }]
   load_balancer = each.key == "varnish" ? {
     service = {
       target_group_arn = module.alb.target_groups.arn
