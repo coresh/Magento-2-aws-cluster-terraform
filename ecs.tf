@@ -11,7 +11,7 @@ module "ecs_cluster" {
   name         = "${local.project}-${each.key}-ecs-cluster"
   autoscaling_capacity_providers = {
     (each.key) = {
-      auto_scaling_group_arn         = module.asg[each.key].autoscaling_group_arn
+      auto_scaling_group_arn         = module.autoscaling[each.key].autoscaling_group_arn
       managed_draining               = "ENABLED"
       managed_termination_protection = "ENABLED"
       managed_scaling = {
