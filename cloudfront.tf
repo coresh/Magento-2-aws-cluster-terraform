@@ -41,7 +41,7 @@ module "cloudfront" {
   vpc_origin = {
     alb_vpc_origin = {
       name                   = "${local.project}-alb-vpc-origin"
-      arn                    = module.alb["varnish"].arn
+      arn                    = module.alb.arn
       http_port              = 80
       https_port             = 443
       origin_protocol_policy = "https-only"
@@ -68,7 +68,7 @@ module "cloudfront" {
       }
     }
     alb_vpc_origin = {
-      domain_name = module.alb["varnish"].dns_name
+      domain_name = module.alb.dns_name
       vpc_origin_config = {
         vpc_origin               = "alb_vpc_origin"
         origin_keepalive_timeout = 60
