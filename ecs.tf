@@ -70,7 +70,7 @@ module "ecs_service" {
   memory = local.env.ecs.cluster.memory
   service_connect_configuration = {
     enabled = each.key == "backend" ? true : false
-    namespace = aws_service_discovery_private_dns_namespace.main.arn
+    namespace = aws_service_discovery_private_dns_namespace.this.arn
     service = {
       client_alias = {
         port     = local.env.ecs.container[each.key].port
