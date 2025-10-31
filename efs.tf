@@ -8,9 +8,9 @@
 
 locals {
   efs = {
-    "EFS_SYSTEM_ID"               = module.efs.id
-    "EFS_SYSTEM_DNS_NAME"         = module.efs.dns_name
-    "EFS_SYSTEM_ARN"              = module.efs.arn
+    "EFS_SYSTEM_ID"        = module.efs.id
+    "EFS_SYSTEM_DNS_NAME"  = module.efs.dns_name
+    "EFS_SYSTEM_ARN"       = module.efs.arn
     "EFS_ACCESS_POINTS"    = jsonencode(module.efs.access_points)
     "EFS_MOUNT_TARGETS"    = jsonencode(module.efs.mount_targets)
   }
