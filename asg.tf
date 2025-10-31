@@ -149,7 +149,7 @@ module "autoscaling_security_group" {
   vpc_id      = module.vpc.vpc_id
   computed_ingress_with_source_security_group_id = [{
       rule                     = "http-80-tcp"
-      source_security_group_id = module.alb[each.key].security_group_id
+      source_security_group_id = module.alb.security_group_id
     }]
   number_of_computed_ingress_with_source_security_group_id = 1
   egress_rules = ["all-all"]
