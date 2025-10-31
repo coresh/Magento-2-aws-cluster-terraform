@@ -123,7 +123,7 @@ resource "aws_codebuild_project" "this" {
     }
     s3_logs {
       status   = "ENABLED"
-      location = "${module.s3["logs"].backet_arn}/codebuild"
+      location = "${module.s3["logs"].s3_bucket_arn}/codebuild"
     }
   }
 }
@@ -160,5 +160,6 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
 
