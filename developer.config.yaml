@@ -385,7 +385,7 @@ ecs:
       min_size: 1
       max_size: 2
       secrets:
-        - NULL
+        - PROJECT
     backend:
       image: "backend:latest"
       port: 80
