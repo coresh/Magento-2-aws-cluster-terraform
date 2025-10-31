@@ -50,6 +50,17 @@ data "aws_iam_policy_document" "ssm_policy" {
   }
 }
 
+data "aws_iam_policy_document" "ssm_assume_role" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ssm.amazonaws.com"]
+    }
+  }
+}
+
 resource "aws_iam_role" "ssm_service_role" {
   name               = "${local.project}-SSMServiceRole"
   description        = "Provides SSM manage automations and trigger CodeBuild"
@@ -65,3 +76,4 @@ resource "aws_iam_role_policy_attachment" "ssm_policy_attach" {
   role       = aws_iam_role.ssm_service_role.name
   policy_arn = aws_iam_policy.ssm_policy.arn
 }
+
