@@ -447,11 +447,11 @@ s3:
       intelligent_tiering:
         status: "Enabled"
       lifecycle_rule:
-        status: "Enabled"
-    system:
-      versioning: false
-      eventbridge: false
-      policy: "system_bucket_policy"
+        status: "Disabled"
+    releases:
+      eventbridge: true
+      versioning: true
+      policy: "releases_bucket_policy"
       intelligent_tiering:
         status: "Disabled"
       lifecycle_rule:
