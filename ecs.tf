@@ -121,7 +121,7 @@ module "ecs_service" {
     name = name
     efs_volume_configuration = {
       file_system_id     = module.efs.id
-      root_directory     = module.efs.access_points[name].root_directory_path
+      root_directory     = "/"
       transit_encryption = "ENABLED"
       authorization_config = {
         access_point_id = module.efs.access_points[name].id
@@ -131,7 +131,7 @@ module "ecs_service" {
   }}  
   load_balancer = each.key == "varnish" ? {
     service = {
-      target_group_arn = module.alb.target_groups.arn
+      target_group_arn = module.alb.target_groups[each.key].arn
       container_name   = each.key
       container_port   = 80
     }
