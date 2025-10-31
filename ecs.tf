@@ -1,3 +1,53 @@
+
+
+/////////////////////////////////////////////////////[ ECS CLUSTER MODULE ]///////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create ECS Cluster configuration
+# # ---------------------------------------------------------------------------------------------------------------------#
+module "ecs_cluster" {
+  source       = "terraform-aws-modules/ecs/aws//modules/cluster"
+  for_each     = local.env.ecs.container
+  name         = "${local.project}-${each.key}-ecs-cluster"
+  autoscaling_capacity_providers = {
+    (each.key) = {
+      auto_scaling_group_arn         = module.autoscaling[each.key].autoscaling_group_arn
+      managed_draining               = "ENABLED"
+      managed_termination_protection = "ENABLED"
+      managed_scaling = {
+        status                    = "ENABLED"
+        minimum_scaling_step_size = local.env.ecs.cluster.minimum_scaling_step_size
+        maximum_scaling_step_size = local.env.ecs.cluster.maximum_scaling_step_size
+        target_capacity           = local.env.ecs.cluster.target_capacity
+      }
+    }
+  }
+}
+
+/////////////////////////////////////////////////////[ ECS SERVICE MODULE ]///////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create ECS Service CloudMap discovery
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_service_discovery_private_dns_namespace" "this" {
+  name        = "${local.env.brand}.internal"
+  vpc         = module.vpc.vpc_id
+  description = "Private DNS namespace for ${local.project}"
+}
+resource "aws_service_discovery_service" "this" {
+  name = "backend"
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.this.id
+    dns_records {
+      type = "A"
+      ttl  = 10
+    }
+   routing_policy = "MULTIVALUE"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create ECS Service configuration
+# # ---------------------------------------------------------------------------------------------------------------------#
 module "ecs_service" {
   source      = "terraform-aws-modules/ecs/aws//modules/service"
   for_each    = local.env.ecs.container
