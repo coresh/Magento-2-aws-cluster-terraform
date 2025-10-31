@@ -17,7 +17,7 @@ locals {
 }
 
 resource "aws_ssm_parameter" "rds" {
-  for_each    = local.rds
+  for_each    = local.env.rds.create ? local.rds : {}
   name        = "/${local.project}/${each.key}"
   description = "RDS parameter: ${each.key}"
   type        = "String"
