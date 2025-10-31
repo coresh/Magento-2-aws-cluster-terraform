@@ -103,7 +103,7 @@ module "ecs_service" {
       }]
       workingDirectory = each.key == "backend" ? "/home/${local.env.brand}/public/current" : null
       essential        = true
-      secrets = [for secret in local.env.ecs[each.key].secrets : {
+      secrets = [for secret in local.env.ecs.container[each.key].secrets : {
         name      = secret
         valueFrom = "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${secret}"
       }]
