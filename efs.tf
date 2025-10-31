@@ -7,15 +7,13 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 
 locals {
-  efs = merge([
-    for efs_key, efs_output in module.efs : {
-      "EFS_${upper(efs_key)}_ID"            = efs_output.id
-      "EFS_${upper(efs_key)}_DNS_NAME"      = efs_output.dns_name
-      "EFS_${upper(efs_key)}_ARN"           = efs_output.arn
-      "EFS_${upper(efs_key)}_ACCESS_POINTS" = jsonencode(try(efs_output.access_points, null))
-      "EFS_${upper(efs_key)}_MOUNT_TARGETS" = jsonencode(try(efs_output.mount_targets, null))
-    }
-  ]...)
+  efs = {
+    "EFS_SYSTEM_ID"               = module.efs.id
+    "EFS_SYSTEM_DNS_NAME"         = module.efs.dns_name
+    "EFS_SYSTEM_ARN"              = module.efs.arn
+    "EFS_ACCESS_POINTS"    = jsonencode(module.efs.access_points)
+    "EFS_MOUNT_TARGETS"    = jsonencode(module.efs.mount_targets)
+  }
 }
 
 resource "aws_ssm_parameter" "efs" {
