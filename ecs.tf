@@ -1,53 +1,3 @@
-
-
-/////////////////////////////////////////////////////[ ECS CLUSTER MODULE ]///////////////////////////////////////////////
-
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create ECS Cluster configuration
-# # ---------------------------------------------------------------------------------------------------------------------#
-module "ecs_cluster" {
-  source       = "terraform-aws-modules/ecs/aws//modules/cluster"
-  for_each     = local.env.ecs.container
-  name         = "${local.project}-${each.key}-ecs-cluster"
-  autoscaling_capacity_providers = {
-    (each.key) = {
-      auto_scaling_group_arn         = module.autoscaling[each.key].autoscaling_group_arn
-      managed_draining               = "ENABLED"
-      managed_termination_protection = "ENABLED"
-      managed_scaling = {
-        status                    = "ENABLED"
-        minimum_scaling_step_size = local.env.ecs.cluster.minimum_scaling_step_size
-        maximum_scaling_step_size = local.env.ecs.cluster.maximum_scaling_step_size
-        target_capacity           = local.env.ecs.cluster.target_capacity
-      }
-    }
-  }
-}
-
-/////////////////////////////////////////////////////[ ECS SERVICE MODULE ]///////////////////////////////////////////////
-
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create ECS Service CloudMap discovery
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_service_discovery_private_dns_namespace" "this" {
-  name        = "${local.env.brand}.internal"
-  vpc         = module.vpc.vpc_id
-  description = "Private DNS namespace for ${local.project}"
-}
-resource "aws_service_discovery_service" "this" {
-  name = "backend"
-  dns_config {
-    namespace_id = aws_service_discovery_private_dns_namespace.this.id
-    dns_records {
-      type = "A"
-      ttl  = 10
-    }
-   routing_policy = "MULTIVALUE"
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create ECS Service configuration
-# # ---------------------------------------------------------------------------------------------------------------------#
 module "ecs_service" {
   source      = "terraform-aws-modules/ecs/aws//modules/service"
   for_each    = local.env.ecs.container
@@ -68,18 +18,18 @@ module "ecs_service" {
   }
   cpu    = local.env.ecs.cluster.cpu
   memory = local.env.ecs.cluster.memory
-  service_connect_configuration = {
-    enabled = each.key == "backend" ? true : false
+  service_connect_configuration = each.key == "backend" ? {
+    enabled   = true
     namespace = aws_service_discovery_private_dns_namespace.this.arn
-    service = {
+    service   = [{
       client_alias = {
         port     = local.env.ecs.container[each.key].port
         dns_name = each.key
       }
       port_name      = each.key
       discovery_name = each.key
-    }
-  }
+    }]
+  } : null 
   runtime_platform = {
     cpu_architecture = local.env.ecs.cluster.cpu_architecture
     operating_system_family = "LINUX"
@@ -117,7 +67,7 @@ module "ecs_service" {
       }
     }
   }
-  volume = each.key == "varnish" ? [] : [for name, config in local.env.efs : {
+  volume = each.key == "varnish" ? {} : { for name, config in local.env.efs : name => {
     name = name
     efs_volume_configuration = {
       file_system_id     = module.efs.id
@@ -128,7 +78,7 @@ module "ecs_service" {
         iam             = "ENABLED"
       }
     }
-  }]
+  }}  
   load_balancer = each.key == "varnish" ? {
     service = {
       target_group_arn = module.alb.target_groups.arn
