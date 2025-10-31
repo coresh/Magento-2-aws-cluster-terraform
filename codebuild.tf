@@ -35,8 +35,8 @@ resource "aws_iam_role_policy" "codebuild" {
           "s3:GetBucketVersioning"
         ]
         Resource = [
-          module.s3["releases"].arn,
-          "${module.s3["releases"].arn}/*"
+          module.s3["releases"].s3_bucket_arn,
+          "${module.s3["releases"].s3_bucket_arn}/*"
         ]
       },
       {
@@ -107,7 +107,7 @@ resource "aws_codebuild_project" "this" {
   }
   source {
     type      = "S3"
-    location  = "${module.s3["releases"].bucket_arn}/"
+    location  = "${module.s3["releases"].s3_bucket_arn}/"
     buildspec = "buildspec.yml"
   }
   vpc_config {
@@ -128,3 +128,4 @@ resource "aws_codebuild_project" "this" {
     }
   }
 }
+
