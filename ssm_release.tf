@@ -48,6 +48,7 @@ mainSteps:
       Api: "Publish"
       TopicArn: "${module.sns["devops"].topic_arn}"
       Subject: "CodeBuild deployment triggered for ${local.project}"
-      Message: "CodeBuild project ${aws_codebuild_project.efs_deploy.name} started for release {{ S3ObjectKey }} with Build ID {{ StartCodeBuild.BuildId }} at {{ global:DATE_TIME }}"
+      Message: "CodeBuild project ${aws_codebuild_project.this.name} started for release {{ S3ObjectKey }} with Build ID {{ StartCodeBuild.BuildId }} at {{ global:DATE_TIME }}"
 EOF
 }
+
