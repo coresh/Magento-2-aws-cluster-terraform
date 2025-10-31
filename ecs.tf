@@ -57,7 +57,7 @@ module "ecs_service" {
   requires_compatibilities   = ["EC2"]
   capacity_provider_strategy = {
     (each.key) = {
-      capacity_provider = keys(module.ecs_cluster[each.key].autoscaling_capacity_providers)
+      capacity_provider = one(keys(module.ecs_cluster[each.key].autoscaling_capacity_providers))
       weight            = 1
       base              = 1
     }
