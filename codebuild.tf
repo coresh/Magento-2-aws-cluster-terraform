@@ -79,7 +79,6 @@ resource "aws_iam_role_policy" "codebuild" {
     ]
   })
 }
-
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CodeBuild project
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -114,7 +113,7 @@ resource "aws_codebuild_project" "this" {
     vpc_id = module.vpc.vpc_id
     subnets = module.vpc.private_subnets
     security_group_ids = [
-      aws_security_group.codebuild.id
+      module.codebuild_security_group.security_group_id
     ]
   }
   logs_config {
@@ -126,6 +125,39 @@ resource "aws_codebuild_project" "this" {
       status   = "ENABLED"
       location = "${module.s3["logs"].backet_arn}/codebuild"
     }
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CodeBuild security group
+# # ---------------------------------------------------------------------------------------------------------------------#
+module "codebuild_security_group" {
+  source      = "terraform-aws-modules/security-group/aws"
+  version     = "5.3.0"
+  name        = "${local.project}-codebuild"
+  description = "Security group for CodeBuild to access EFS and internet"
+  vpc_id      = module.vpc.vpc_id
+  ingress_with_cidr_blocks = []
+  egress_with_source_security_group_id = [
+    {
+      rule                     = "nfs-tcp"
+      source_security_group_id = module.efs.security_group_id
+      description              = "Allow NFS access to EFS"
+    }
+  ]
+  egress_with_cidr_blocks = [
+    {
+      rule        = "https-443-tcp"
+      cidr_blocks = "0.0.0.0/0"
+      description = "Allow HTTPS outbound to internet"
+    },
+    {
+      rule        = "http-80-tcp"
+      cidr_blocks = "0.0.0.0/0"
+      description = "Allow HTTP outbound to internet"
+    }
+  ]
+  tags = {
+    Name = "${local.project}-codebuild"
   }
 }
 
