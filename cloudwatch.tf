@@ -24,7 +24,7 @@ module "metric_alarm" {
   dimensions = each.value.dimensions != "" ? {
     (each.value.dimensions) = lookup({
       "AutoScalingGroupName" = module.autoscaling["backend"].autoscaling_group_name
-      "LoadBalancer"         = module.alb["varnish"].id
+      "LoadBalancer"         = module.alb.id
     }, each.value.dimensions, null)
     } : null
 }
