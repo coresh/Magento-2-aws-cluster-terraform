@@ -403,7 +403,7 @@ ecs:
 
 asg:
   health_check_type: "EC2"
-  protect_from_scale_in: false
+  protect_from_scale_in: true
   instance_warmup: 60
   use_mixed_instances_policy: true
   mixed_instances_policy:
