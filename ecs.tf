@@ -34,17 +34,6 @@ resource "aws_service_discovery_private_dns_namespace" "this" {
   vpc         = module.vpc.vpc_id
   description = "Private DNS namespace for ${local.project}"
 }
-resource "aws_service_discovery_service" "this" {
-  name = "backend"
-  dns_config {
-    namespace_id = aws_service_discovery_private_dns_namespace.this.id
-    dns_records {
-      type = "A"
-      ttl  = 10
-    }
-   routing_policy = "MULTIVALUE"
-  }
-}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create ECS Service configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
