@@ -48,14 +48,14 @@ elasticache:
   cluster:
     session:
       node_type: "cache.t4g.micro"
-      num_cache_clusters: *availability_zone_total
+      num_cache_clusters: 1 # *availability_zone_total
       transit_encryption_enabled: true
       at_rest_encryption_enabled: true
       maintenance_window: "sun:05:00-sun:09:00"
       apply_immediately: true
     cache:
       node_type: "cache.t4g.micro"
-      num_cache_clusters: *availability_zone_total
+      num_cache_clusters: 1 # *availability_zone_total
       transit_encryption_enabled: true
       at_rest_encryption_enabled: true
       maintenance_window: "sun:05:00-sun:09:00"
@@ -125,7 +125,7 @@ opensearch:
   instance_type: "t3.small.search"
   auto_tune_options:
     desired_state: "DISABLED"
-  instance_count: *availability_zone_total
+  instance_count: 1 # *availability_zone_total
   multi_az_with_standby_enabled: false
   tls_security_policy: "Policy-Min-TLS-1-2-PFS-2023-10"
   ebs_enabled: true
@@ -135,12 +135,12 @@ opensearch:
   dedicated_master_enabled: false
   dedicated_master_type: "r7g.medium.search"
   warm_enabled: false
-  warm_count: *availability_zone_total
+  warm_count: 1 # *availability_zone_total
   warm_type: "ultrawarm1.medium.search"
   node_options:
     node_config:
       enabled: false
-      count: *availability_zone_total
+      count: 1 # *availability_zone_total
       type: "r7g.medium.search"
   metrics:
     cluster:
@@ -381,8 +381,8 @@ ecs:
       volume_size: 10
       cpu: 2048
       memory: 4096
-      desired_capacity: 1
-      min_size: 1
+      desired_capacity: *availability_zone_total
+      min_size: *availability_zone_total
       max_size: 2
       secrets:
         - PROJECT
@@ -394,8 +394,8 @@ ecs:
       volume_size: 25
       cpu: 2048
       memory: 4096
-      desired_capacity: 2
-      min_size: 2
+      desired_capacity: 2 # *availability_zone_total
+      min_size: 2 # *availability_zone_total
       max_size: 6
       secrets:
         - DATABASE_IDENTIFIER
