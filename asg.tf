@@ -14,7 +14,8 @@ module "autoscaling" {
   instance_type    = each.value.instance_type
   security_groups  = [module.autoscaling_security_group[each.key].security_group_id]
   user_data        = base64encode(templatefile("${path.module}/user_data.tftpl", {
-       ecs_cluster = module.ecs_cluster[each.key].name
+       ecs_cluster = module.ecs_cluster[each.key].name,
+       region      = data.aws_region.current.region
   }))
   vpc_zone_identifier    = module.vpc.private_subnets
   health_check_type      = local.env.asg.health_check_type
