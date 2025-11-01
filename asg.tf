@@ -3,43 +3,6 @@
 ///////////////////////////////////////////////////[ AUTOSCALING ECS MODULE ]/////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Locals 
-# # ---------------------------------------------------------------------------------------------------------------------#
-
-locals {
-  user_data = <<-END
-    #!/bin/bash
-    ### install docker
-    . /etc/os-release
-    install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/$ID/gpg -o /etc/apt/keyrings/docker.asc
-    chmod a+r /etc/apt/keyrings/docker.asc
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/$ID $VERSION_CODENAME stable" > /etc/apt/sources.list.d/docker.list
-    apt-get update
-    apt-get upgrade -yq
-    apt-get install -yq syslog-ng docker-ce docker-ce-cli containerd.io
-    export DEBIAN_FRONTEND=noninteractive
-    ### ecs cluster configuration
-    mkdir -p /etc/ecs
-    echo "ECS_CLUSTER=${local.project}-ecs-cluster" > /etc/ecs/ecs.config
-    echo "ECS_LOGLEVEL=debug" >> /etc/ecs/ecs.config
-    echo "ECS_ENABLE_TASK_IAM_ROLE=true" >> /etc/ecs/ecs.config
-    ### install ecs agent
-    cd /tmp/
-    curl -O https://s3.${data.aws_region.current.region}.amazonaws.com/amazon-ecs-agent-${data.aws_region.current.region}/amazon-ecs-init-latest.$(dpkg --print-architecture).deb
-    dpkg -i amazon-ecs-init-latest.$(dpkg --print-architecture).deb
-    systemctl enable ecs
-    systemctl start ecs
-    ### install ssm manager
-    cd /tmp/
-    curl -O https://s3.${data.aws_region.current.region}.amazonaws.com/amazon-ssm-${data.aws_region.current.region}/latest/debian_$(dpkg --print-architecture)/amazon-ssm-agent.deb
-    dpkg -i amazon-ssm-agent.deb
-    systemctl enable amazon-ssm-agent
-    systemctl start amazon-ssm-agent
-  END
-}
-
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Autoscaling group
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "autoscaling" {
@@ -50,7 +13,9 @@ module "autoscaling" {
   image_id         = data.aws_ami.this.id
   instance_type    = each.value.instance_type
   security_groups  = [module.autoscaling_security_group[each.key].security_group_id]
-  user_data        = base64encode(local.user_data)
+  user_data        = base64encode(templatefile("${path.module}/user_data.tftpl", {
+       ecs_cluster = module.ecs_cluster[each.key].name
+  }))
   vpc_zone_identifier    = module.vpc.private_subnets
   health_check_type      = local.env.asg.health_check_type
   min_size               = each.value.min_size
