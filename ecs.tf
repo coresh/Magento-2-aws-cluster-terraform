@@ -89,10 +89,11 @@ module "ecs_service" {
       image  = local.env.ecs.container[each.key].image
       cpu    = local.env.ecs.container[each.key].cpu
       memory = local.env.ecs.container[each.key].memory
-      port_mappings = [
+      portMappings = [
         {
           name          = each.key
           containerPort = local.env.ecs.container[each.key].port
+          hostPort      = local.env.ecs.container[each.key].port
           protocol      = local.env.ecs.container[each.key].protocol
         }
       ]
