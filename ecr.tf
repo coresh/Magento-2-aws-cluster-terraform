@@ -7,7 +7,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "ecr" {
   source            = "terraform-aws-modules/ecr/aws"
-  version           = "3.1.1"
+  version           = "3.1.0"
   create            = true
   create_repository = true
   repository_type   = "private"
@@ -39,7 +39,7 @@ module "ecr" {
 
 module "ecr_registry_config" {
   source            = "terraform-aws-modules/ecr/aws"
-  version           = "3.1.1"
+  version           = "3.1.0"
   create_repository = false
   manage_registry_scanning_configuration = true
   registry_scan_type  = "BASIC"
