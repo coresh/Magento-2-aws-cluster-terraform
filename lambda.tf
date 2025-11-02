@@ -14,7 +14,7 @@ module "imgproxy" {
   description    = "Imgproxy image processing service for ${local.env.domain}"
   package_type   = "Image"
   create_package = false
-  image_uri      = "${module.ecr["imgproxy"].repository_url}/${local.env.lambda.imgproxy}"
+  image_uri      = "${module.ecr["imgproxy"].repository_url}:${local.env.imgproxy.image}"
   memory_size    = local.env.lambda.memory_size
   timeout        = local.env.lambda.timeout
   architectures  = ["arm64"]
