@@ -76,12 +76,14 @@ module "autoscaling" {
         Name = "${local.project}-${each.key}-ec2"
         Shortname = each.key
         Hostname = "${each.key}.${local.env.brand}.internal"
+        Environment = local.environment
       }
     },
 	{
     resource_type = "volume"
     tags = {
         Name = "${local.project}-${each.key}-volume"
+        Environment = local.environment
       }
     }
   ]
