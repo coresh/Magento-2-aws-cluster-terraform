@@ -364,6 +364,27 @@ alb:
       threshold: "5"
       dimensions: "LoadBalancer"
 
+ecr:
+  create: true
+  repository_type: "private"
+  create_repository_policy: true
+  attach_repository_policy: true
+  create_lifecycle_policy: true
+  keep_images: 5
+  repository:
+    imgproxy:
+      create_repository: true
+      repository_image_tag_mutability: "MUTABLE"
+      repository_force_delete: true
+    backend:
+      create_repository: true
+      repository_image_tag_mutability: "MUTABLE"
+      repository_force_delete: true
+    varnish:
+      create_repository: true
+      repository_image_tag_mutability: "MUTABLE"
+      repository_force_delete: true
+
 ecs:
   cluster:
     minimum_scaling_step_size: 1
