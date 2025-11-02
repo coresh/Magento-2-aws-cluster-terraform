@@ -28,7 +28,7 @@ module "ecr" {
       selection = {
         tagStatus   = "any"
         countType   = "imageCountMoreThan"
-        countNumber = each.value.keep_images
+        countNumber = local.env.ecr.keep_images
       }
     }]
   })
