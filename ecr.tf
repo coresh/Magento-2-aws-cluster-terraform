@@ -8,16 +8,16 @@
 module "ecr" {
   source            = "terraform-aws-modules/ecr/aws"
   version           = "3.1.0"
-  create            = true
-  create_repository = true
-  repository_type   = "private"
-  repository_name   = "${local.project}-images"
-  repository_image_tag_mutability    = "MUTABLE"
-  repository_force_delete            = true
-  create_repository_policy           = true
-  attach_repository_policy           = true
-  repository_lambda_read_access_arns = [module.imgproxy.lambda_function_arn]
-  create_lifecycle_policy            = true
+  for_each          = local.env.ecr.repository
+  create            = local.env.ecr.create
+  create_repository = each.value.create_repository
+  repository_type   = local.env.ecr.repository_type
+  repository_name   = "${local.project}-images/${each.key}"
+  repository_image_tag_mutability = each.value.repository_image_tag_mutability
+  repository_force_delete         = each.value.repository_force_delete
+  create_repository_policy        = local.env.ecr.create_repository_policy
+  attach_repository_policy        = local.env.ecr.attach_repository_policy
+  create_lifecycle_policy         = local.env.ecr.create_lifecycle_policy
   repository_lifecycle_policy = jsonencode({
     rules = [{
       rulePriority = 1
@@ -28,12 +28,13 @@ module "ecr" {
       selection = {
         tagStatus   = "any"
         countType   = "imageCountMoreThan"
-        countNumber = 5
+        countNumber = each.value.keep_images
       }
     }]
   })
+  repository_lambda_read_access_arns = each.key == "imgproxy" ? [module.imgproxy.lambda_function_arn] : null
   tags = {
-    Name = "${local.project}-images"
+    Name = "${local.project}-images-${each.key}"
   }
 }
 
