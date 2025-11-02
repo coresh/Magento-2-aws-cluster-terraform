@@ -75,7 +75,7 @@ module "ecs_service" {
   }
   container_definitions = {
     (each.key) = {
-      image  = local.env.ecs.container[each.key].image
+      image  = "${module.ecr[each.key].repository_url}:${local.env.ecs.container[each.key].image}"
       cpu    = local.env.ecs.container[each.key].cpu
       memory = local.env.ecs.container[each.key].memory
       portMappings = [
