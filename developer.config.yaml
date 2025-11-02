@@ -395,7 +395,7 @@ ecs:
     cpu_architecture: "ARM64"
   container:
     varnish:
-      image: "varnish:latest"
+      image: "latest"
       port: 80
       protocol: "tcp"
       instance_type: "t4g.micro"
@@ -408,7 +408,7 @@ ecs:
       secrets:
         - PROJECT
     backend:
-      image: "backend:latest"
+      image: "latest"
       port: 80
       protocol: "tcp"
       instance_type: "t4g.micro"
@@ -547,9 +547,9 @@ lambda:
   tracing_mode: "Active"
   cloudwatch_logs_retention_in_days: 30
   logging_log_format: "JSON"
-  imgproxy: "imgproxy:latest"
 
 imgproxy:
+  image: "latest"
   port: "8080"
   use_s3: true
   allow_insecure: true
