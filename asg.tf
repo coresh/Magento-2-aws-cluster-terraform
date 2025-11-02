@@ -9,7 +9,7 @@ module "autoscaling" {
   source           = "terraform-aws-modules/autoscaling/aws"
   version          = "9.0.1"
   for_each         = local.env.ecs.container
-  name             = "${local.project}-${each.key}-asg"
+  name             = "${local.project}-${each.key}-ecs-asg"
   image_id         = data.aws_ami.this.id
   instance_type    = each.value.instance_type
   security_groups  = [module.autoscaling_security_group[each.key].security_group_id]
