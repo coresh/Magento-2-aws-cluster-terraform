@@ -127,6 +127,22 @@ module "ecs_service" {
     }
   } : null
   subnet_ids = module.vpc.private_subnets
+  task_exec_ssm_param_arns = [
+    "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/*"
+  ]
+  tasks_iam_role_statements = [
+    {
+      sid = "SSMParameterAccess"
+      actions = [
+        "ssm:GetParameters",
+        "ssm:GetParameter", 
+        "ssm:GetParametersByPath"
+      ]
+      resources = [
+        "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/*"
+      ]
+    }
+  ]
   security_group_ingress_rules = {
     alb_http_ingress = {
       from_port                    = 80
