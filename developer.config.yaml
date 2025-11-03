@@ -387,11 +387,12 @@ ecr:
 
 ecs:
   cluster:
+    multi_az: true
     minimum_scaling_step_size: 1
     maximum_scaling_step_size: 6
     target_capacity: 70
     cpu: 2048
-    memory: 4096
+    memory: 3072
     cpu_architecture: "ARM64"
   container:
     varnish:
@@ -401,9 +402,9 @@ ecs:
       instance_type: "t4g.micro"
       volume_size: 10
       cpu: 2048
-      memory: 4096
-      desired_capacity: *availability_zone_total
-      min_size: *availability_zone_total
+      memory: 3072
+      desired_capacity: 1 # *availability_zone_total
+      min_size: 1 # *availability_zone_total
       max_size: 2
       secrets:
         - PROJECT
@@ -414,13 +415,16 @@ ecs:
       instance_type: "t4g.micro"
       volume_size: 25
       cpu: 2048
-      memory: 4096
+      memory: 3072
       desired_capacity: 2 # *availability_zone_total
       min_size: 2 # *availability_zone_total
       max_size: 6
       secrets:
-        - DATABASE_IDENTIFIER
-        - DATABASE_PASSWORD
+        - AURORA_CLUSTER_ENDPOINT
+        - AURORA_READER_ENDPOINT
+        - AURORA_DATABASE_NAME
+        - AURORA_MASTER_USERNAME
+        - AURORA_MASTER_PASSWORD
 
 asg:
   health_check_type: "EC2"
