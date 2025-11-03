@@ -10,13 +10,14 @@ module "autoscaling" {
   version          = "9.0.1"
   for_each         = local.env.ecs.container
   name             = "${local.project}-${each.key}-ecs-asg"
-  image_id         = data.aws_ami.this.id
+  image_id         = data.aws_ami.ecs_optimized.id
   instance_type    = each.value.instance_type
   security_groups  = [module.autoscaling_security_group[each.key].security_group_id]
-  user_data        = base64encode(templatefile("${path.module}/user_data.tftpl", {
-       ecs_cluster = "${local.project}-${each.key}-ecs-cluster",
-       region      = data.aws_region.current.region
-  }))
+  user_data = base64encode(<<-EOF
+  #!/bin/bash
+  echo ECS_CLUSTER="${local.project}-${each.key}-ecs-cluster" >> /etc/ecs/ecs.config
+  EOF
+  )
   vpc_zone_identifier    = module.vpc.private_subnets
   health_check_type      = local.env.asg.health_check_type
   min_size               = each.value.min_size
