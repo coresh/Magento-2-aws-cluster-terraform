@@ -400,7 +400,7 @@ ecs:
       port: 80
       protocol: "tcp"
       instance_type: "t4g.micro"
-      volume_size: 10
+      volume_size: 30
       cpu: 2048
       memory: 3072
       desired_capacity: 1 # *availability_zone_total
@@ -413,7 +413,7 @@ ecs:
       port: 80
       protocol: "tcp"
       instance_type: "t4g.micro"
-      volume_size: 25
+      volume_size: 30
       cpu: 2048
       memory: 3072
       desired_capacity: 2 # *availability_zone_total
