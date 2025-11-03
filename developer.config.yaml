@@ -500,18 +500,18 @@ s3:
 
 efs:
   public:
-    uid: "1001"
-    gid: "1002"
+    uid: "1000"
+    gid: "1001"
     permissions: "2770"
     read_only: false
   shared:
-    uid: "1001"
-    gid: "1002"
+    uid: "1000"
+    gid: "1001"
     permissions: "2770"
     read_only: false
   releases:
-    uid: "1001"
-    gid: "1002"
+    uid: "1000"
+    gid: "1001"
     permissions: "2770"
     read_only: false
 
