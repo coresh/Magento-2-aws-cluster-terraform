@@ -130,7 +130,7 @@ opensearch:
   tls_security_policy: "Policy-Min-TLS-1-2-PFS-2023-10"
   ebs_enabled: true
   volume_type: "gp3"
-  volume_size: "50"
+  volume_size: "10"
   ip_address_type: "ipv4"
   dedicated_master_enabled: false
   dedicated_master_type: "r7g.medium.search"
