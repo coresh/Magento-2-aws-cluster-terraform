@@ -12,6 +12,18 @@ data "aws_ami" "this" {
   owners      = ["136693071363"]
   filter {
     name   = "name"
-    values = ["debian-12-arm64*"]
+    values = ["debian-13-arm64*"]
+  }
+}
+data "aws_ami" "ecs_optimized" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["al2023-ami-ecs-*"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["arm64"]
   }
 }
