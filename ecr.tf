@@ -21,7 +21,7 @@ module "ecr" {
   repository_lifecycle_policy = jsonencode({
     rules = [{
       rulePriority = 1
-      description  = "Keep last 5 images"
+      description  = "Keep last ${local.env.ecr.keep_images} images"
       action = {
         type = "expire"
       }
@@ -32,7 +32,7 @@ module "ecr" {
       }
     }]
   })
-  repository_lambda_read_access_arns = each.key == "imgproxy" ? [module.imgproxy.lambda_function_arn] : null
+  repository_lambda_read_access_arns = each.key == "imgproxy" ? [module.imgproxy.lambda_function_arn] : []
   tags = {
     Name = "${local.project}-images-${each.key}"
   }
