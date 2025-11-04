@@ -502,18 +502,18 @@ efs:
   public:
     uid: "1000"
     gid: "1001"
-    permissions: "2770"
+    permissions: "750"
     read_only: true
   shared:
     uid: "1000"
     gid: "1001"
-    permissions: "2770"
+    permissions: "770"
     read_only: false
   releases:
     uid: "1000"
     gid: "1001"
-    permissions: "2770"
-    read_only: false
+    permissions: "750"
+    read_only: true
 
 cloudfront:
   staging: false
