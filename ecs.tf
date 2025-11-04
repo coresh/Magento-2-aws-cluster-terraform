@@ -57,7 +57,7 @@ module "ecs_service" {
   }
   cpu    = local.env.ecs.cluster.cpu
   memory = local.env.ecs.cluster.memory
-  service_connect_configuration = each.key == "backend" ? {
+  service_connect_configuration = each.key == "varnish" ? null : {
     enabled   = true
     namespace = aws_service_discovery_private_dns_namespace.this.arn
     service   = [{
@@ -68,7 +68,7 @@ module "ecs_service" {
       port_name      = each.key
       discovery_name = each.key
     }]
-  } : null 
+  }
   runtime_platform = {
     cpu_architecture = local.env.ecs.cluster.cpu_architecture
     operating_system_family = "LINUX"
@@ -91,7 +91,7 @@ module "ecs_service" {
         containerPath = "/home/${local.env.brand}/${name}"
         readOnly      = config.read_only
       }]
-      workingDirectory = each.key == "backend" ? "/home/${local.env.brand}/public/current" : null
+      workingDirectory = each.key == "varnish" ? null : "/home/${local.env.brand}/public/current" 
       essential        = true
       secrets = [for secret in local.env.ecs.container[each.key].secrets : {
         name      = secret
@@ -141,15 +141,32 @@ module "ecs_service" {
       resources = [
         "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/*"
       ]
+    },
+    {
+      sid = "EFSAccess"
+      actions = [
+        "elasticfilesystem:ClientWrite",
+        "elasticfilesystem:ClientMount"
+      ]
+      resources = [
+        module.efs.arn
+      ]
     }
   ]
   security_group_ingress_rules = {
-    alb_http_ingress = {
-      from_port                    = 80
-      to_port                      = 80
-      ip_protocol                  = "tcp"
-      description                  = "Service port"
-      referenced_security_group_id = module.alb.security_group_id
+    http = {
+      from_port   = 80
+      to_port     = 80
+      ip_protocol = "tcp"
+      cidr_ipv4   = module.vpc.vpc_cidr_block
+      description = "Allow HTTP"
+    }
+  }
+  security_group_egress_rules = {
+    all = {
+      ip_protocol = "-1"
+      cidr_ipv4   = module.vpc.vpc_cidr_block
+      description = "Allow all outbound to VPC"
     }
   }
 }
