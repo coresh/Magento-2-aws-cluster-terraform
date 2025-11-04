@@ -35,7 +35,7 @@ vpc:
 nat_gateway:
   instance_type: "t4g.nano"
   ami_owner: "136693071363"
-  ami_image: "debian-12-arm64*"
+  ami_image: "debian-13-arm64*"
   volume_size: 10
   firewall: true
 
