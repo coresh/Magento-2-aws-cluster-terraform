@@ -503,7 +503,7 @@ efs:
     uid: "1000"
     gid: "1001"
     permissions: "2770"
-    read_only: false
+    read_only: true
   shared:
     uid: "1000"
     gid: "1001"
