@@ -104,7 +104,13 @@ module "ecs_service" {
           }
         }
       }}
-      essential        = true
+      essential   = true
+      environment = each.key == "varnish" ? [
+        {
+          name  = "VARNISH_SIZE"
+          value = local.env.ecs.container[each.key].memory
+        }
+      ] : []
       secrets = [for secret in local.env.ecs.container[each.key].secrets : {
         name      = secret
         valueFrom = "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${secret}"
