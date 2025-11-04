@@ -91,7 +91,19 @@ module "ecs_service" {
         containerPath = "/home/${local.env.brand}/${name}"
         readOnly      = config.read_only
       }]
-      workingDirectory = each.key == "varnish" ? null : "/home/${local.env.brand}/public/current" 
+      workingDirectory = each.key == "varnish" ? null : "/home/${local.env.brand}/public/current"
+      volume = each.key == "varnish" ? {} : { for name, config in local.env.efs : name => {
+        name = name
+        efs_volume_configuration = {
+          file_system_id     = module.efs.id
+          root_directory     = "/"
+          transit_encryption = "ENABLED"
+          authorization_config = {
+            access_point_id = module.efs.access_points[name].id
+            iam             = "ENABLED"
+          }
+        }
+      }}
       essential        = true
       secrets = [for secret in local.env.ecs.container[each.key].secrets : {
         name      = secret
@@ -107,18 +119,16 @@ module "ecs_service" {
       }
     }
   }
-  volume = each.key == "varnish" ? {} : { for name, config in local.env.efs : name => {
-    name = name
-    efs_volume_configuration = {
-      file_system_id     = module.efs.id
-      root_directory     = "/"
-      transit_encryption = "ENABLED"
-      authorization_config = {
-        access_point_id = module.efs.access_points[name].id
-        iam             = "ENABLED"
+  linux_parameters = {
+    init_process_enabled = true
+    tmpfs = each.key == "varnish" ? [
+      {
+        container_path = "/var/lib/varnish/varnishd"
+        mount_options = ["exec", "noatime", "nodiratime"] 
+        size = local.env.ecs.container[each.key].memory
       }
-    }
-  }}  
+    ] : []
+  }
   load_balancer = each.key == "varnish" ? {
     service = {
       target_group_arn = module.alb.target_groups[each.key].arn
