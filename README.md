@@ -49,10 +49,10 @@ Reserved Instances provide you with significant savings on your Amazon EC2 costs
 
 <br />
 
-## 📖 EC2 webstack custom configuration and Auto Scaling management
+## 📖 ECS webstack custom configuration and Auto Scaling management
 NGINX is optimized and fully supported on the latest generation of 64-bit ARM Servers utilizing the architecture. PHP using socket connection.
 
-[**Debian 12** ARM 'bookworm'](https://aws.amazon.com/marketplace/pp/prodview-63gms6fbfaota), which will be supported for the next 5 years. Includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
+[**Amazon Linux ECS Optimized** ARM](https://aws.amazon.com/marketplace/pp/prodview-wc4bbpw5gappowhich), will be supported for the next 5 years. Includes support for ECS and the very latest ARM-based server systems powered by certified 64-bit processors.
 Develop and deploy at scale. Webstack delivers top performance on ARM.
 
 [**AWS Systems Manager**](https://aws.amazon.com/systems-manager/) is an AWS service that you can use to view and control your infrastructure on AWS. Using the Systems Manager console, you can view operational data from multiple AWS EC2 instances and automate operational tasks across your AWS resources. Systems Manager helps you maintain security and compliance. No SSH connections from outside, no need to track passwords and private keys. If you are familiar with shell scripting, yaml and json syntax, create SSM Documents, this is the easiest and most complete way to send instructions to an instance to perform common automated configuration tasks and even run scripts after the instance starts. From default stack optimization to changing any application and service settings.
@@ -76,7 +76,6 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 
 # :rocket: Deployment into isolated VPC:
 - [x] Login to AWS Console
-- [x] [Subscribe to Debian 12 ARM](https://aws.amazon.com/marketplace/pp/prodview-63gms6fbfaota)
 - [x] Choose an AWS Region
 - [x] Start AWS CloudShell [fastest way to deploy and debug]
 - [x] Install Terraform:
@@ -98,6 +97,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 ```
 >  
 ❗ Right after `terraform apply` you will receive email from amazon to approve resources    
+- [x] Create backend state.config with your s3 bucket
 - [x] Adjust your settings, edit your [cidr], [brand], [domain], [email]
 - [x] Define either [production] or [developer] environment config
   
@@ -105,7 +105,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
    
 - [x] Run:
 ```
-   terraform init
+   terraform init -backend-config=./state.config
    terraform workspace new developer
    terraform plan -out developer.plan.out -no-color 2>&1 > developer.plan.out.txt
    terraform apply
@@ -116,15 +116,17 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 <br />
 
 ## Complete setup:
- `2` autoscaling groups with launch templates configuration
- `2` target groups for load balancer (varnish backend)   
- `2` load internal balancers with listeners / rules  
+ `2` ecs autoscaling groups with launch templates configuration
+ `2` ecs target groups for load balancer (varnish)   
+ `1` ecr repository
+ `1` load internal balancers with listeners / rules  
  `1` rds/aurora databases multi AZ option  
- `1` elasticsearch domain for Magento catalog search  
+ `1` opensearch domain for Magento catalog search  
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
- `4` s3 buckets for [media] images and [system] files and [logs] (with access policy)    
- `1` cloudfront s3 origin distribution  
+ `4` s3 buckets for [releases], [media], [system], and [logs] (with access policy)    
+ `1` cloudfront distribution with [s3] and [alb vpc origin]  
+ `1` s3 endpoin  
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module  
@@ -137,22 +139,18 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Deployment into isolated Virtual Private Cloud
 - [x] Autoscaling policy per each group
 - [x] Managed with [Systems Manager](https://aws.amazon.com/systems-manager/) agent
-- [x] Instance Profile assigned to simplify EC2 management
+- [x] Instance Profile assigned to simplify management
 - [x] Create and use ssm documents and EventBridge rules to automate tasks
-- [x] Simple Email Service authentication + SMTP Magento module
+- [x] Simple Email Service authentication for SMTP Magento module
 - [x] CloudWatch agent configured to stream logs
 - [x] All Magento files managed with git only
 - [x] Configuration settings saved in Parameter Store
 - [x] Live shop in production mode / read-only 
 - [x] Security groups configured for every service and instances
-- [x] phpMyAdmin for easy database editing
-- [x] Lambda images optimization
-- [x] Enhanced security in AWS and LEMP 
+- [x] Lambda images optimization with imgproxy
+- [x] Enhanced security in AWS
 - [x] AWS WAF Protection rules  
-
-##
-![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/149658151-d2da3630-e7cc-466e-868d-d9e341aad29e.png)
-
+  
 ## 💰 Infracost - shows cloud infrastructure cost estimates:
 ```
 infracost breakdown --path .
@@ -161,7 +159,7 @@ INFO Found Terraform project main at directory .
 
 Project: main
 
-OVERALL TOTAL       **$981.87 
+OVERALL TOTAL       **$681.87 
 
 ──────────────────────────────────
 294 cloud resources were detected:
@@ -192,7 +190,7 @@ https://github.com/magenx/Magento-2-server-installation
 ## CI/CD scenario:
 [Magento 2 deployment pipeline](https://github.com/magenx/Magento-2-deployment-pipeline) - Fully automated Magento 2 development and deployment pipeline with code review, composer check and pre-release => release workflow | MVP  
   [ just create your own repository, add your magento files, copy only .github folder to your reposity, it will auto init ]
-- [x] Event driven
+- [x] Event driven CodeBuild
 - [X] DevOps with local docker environment - https://github.com/magenx/Magento-2-docker-configuration 
    
 <br />
