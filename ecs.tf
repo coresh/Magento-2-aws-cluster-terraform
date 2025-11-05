@@ -112,11 +112,11 @@ module "ecs_service" {
         }
       ] : []
       linuxParameters = {
-        init_process_enabled = true
+        initProcessEnabled = true
         tmpfs = each.key == "varnish" ? [
           {
-          container_path = "/var/lib/varnish/varnishd"
-          mount_options = ["exec", "noatime", "nodiratime"] 
+          containerPath = "/var/lib/varnish/varnishd"
+          mountOptions = ["exec", "noatime", "nodiratime"] 
           size = local.env.ecs.container[each.key].memory
           }
         ] : []
