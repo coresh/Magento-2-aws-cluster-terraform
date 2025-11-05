@@ -91,13 +91,21 @@ resource "aws_codebuild_project" "this" {
     type = "NO_ARTIFACTS"
   }
   environment {
-    compute_type    = "BUILD_GENERAL1_MEDIUM"
-    image           = "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
-    type            = "LINUX_CONTAINER"
+    compute_type    = "BUILD_GENERAL1_LARGE"
+    image           = "aws/codebuild/amazonlinux-x86_64-standard:5.0"
+    type            = "LINUX_EC2"
     privileged_mode = true
     environment_variable {
       name  = "EFS_SYSTEM_ID"
       value = module.efs.id
+    }
+    environment_variable {
+      name  = "S3_RELEASE_BUCKET"
+      value = module.s3["releases"].s3_bucket_arn
+    }
+    environment_variable {
+      name  = "RELEASE_FILE"
+      value = ""
     }
     environment_variable {
       name  = "PROJECT"
@@ -105,9 +113,8 @@ resource "aws_codebuild_project" "this" {
     }
   }
   source {
-    type      = "S3"
-    location  = "${module.s3["releases"].s3_bucket_arn}/"
-    buildspec = "buildspec.yml"
+    type      = "NO_SOURCE"
+    buildspec = file("${path.module}/buildspec.yml")
   }
   vpc_config {
     vpc_id = module.vpc.vpc_id
@@ -160,6 +167,7 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
 
 
