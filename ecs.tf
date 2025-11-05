@@ -108,7 +108,7 @@ module "ecs_service" {
       environment = each.key == "varnish" ? [
         {
           name  = "VARNISH_SIZE"
-          value = local.env.ecs.container[each.key].memory
+          value = "${local.env.ecs.container[each.key].memory}M"
         }
       ] : []
       linuxParameters = {
