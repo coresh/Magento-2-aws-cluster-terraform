@@ -73,6 +73,18 @@ module "ecs_service" {
     cpu_architecture = local.env.ecs.cluster.cpu_architecture
     operating_system_family = "LINUX"
   }
+  volume = each.key == "varnish" ? {} : { for name, config in local.env.efs : name => {
+    name = name
+    efs_volume_configuration = {
+      file_system_id     = module.efs.id
+      root_directory     = "/"
+      transit_encryption = "ENABLED"
+      authorization_config = {
+        access_point_id = module.efs.access_points[name].id
+        iam             = "ENABLED"
+      }
+    }
+  }}
   container_definitions = {
     (each.key) = {
       image  = "${module.ecr[each.key].repository_url}:${local.env.ecs.container[each.key].image}"
@@ -92,18 +104,6 @@ module "ecs_service" {
         readOnly      = config.read_only
       }]
       workingDirectory = each.key == "varnish" ? null : "/home/${local.env.brand}/public/current"
-      volume = each.key == "varnish" ? {} : { for name, config in local.env.efs : name => {
-        name = name
-        efs_volume_configuration = {
-          file_system_id     = module.efs.id
-          root_directory     = "/"
-          transit_encryption = "ENABLED"
-          authorization_config = {
-            access_point_id = module.efs.access_points[name].id
-            iam             = "ENABLED"
-          }
-        }
-      }}
       essential   = true
       environment = each.key == "varnish" ? [
         {
@@ -111,6 +111,16 @@ module "ecs_service" {
           value = local.env.ecs.container[each.key].memory
         }
       ] : []
+      linux_parameters = {
+        init_process_enabled = true
+        tmpfs = each.key == "varnish" ? [
+          {
+          container_path = "/var/lib/varnish/varnishd"
+          mount_options = ["exec", "noatime", "nodiratime"] 
+          size = local.env.ecs.container[each.key].memory
+          }
+        ] : []
+      }
       secrets = [for secret in local.env.ecs.container[each.key].secrets : {
         name      = secret
         valueFrom = "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${secret}"
@@ -124,16 +134,6 @@ module "ecs_service" {
         logDriver = "awslogs"
       }
     }
-  }
-  linux_parameters = {
-    init_process_enabled = true
-    tmpfs = each.key == "varnish" ? [
-      {
-        container_path = "/var/lib/varnish/varnishd"
-        mount_options = ["exec", "noatime", "nodiratime"] 
-        size = local.env.ecs.container[each.key].memory
-      }
-    ] : []
   }
   load_balancer = each.key == "varnish" ? {
     service = {
