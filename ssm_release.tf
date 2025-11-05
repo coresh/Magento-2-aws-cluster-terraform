@@ -28,14 +28,8 @@ mainSteps:
       artifactsOverride:
         type: NO_ARTIFACTS
       environmentVariablesOverride:
-        - name: "S3_RELEASE_BUCKET_ID"
-          value: module.s3["releases"].s3_bucket_id
-        - name: "S3_RELEASE_OBJECT_KEY" 
+        - name: "RELEASE_FILE" 
           value: "{{ S3ObjectKey }}"
-        - name: "EFS_SYSTEM_ID"
-          value: module.efs.id
-        - name: "PROJECT"
-          value: local.project
     outputs:
       - Name: BuildId
         Selector: "$.build.id"
@@ -51,4 +45,5 @@ mainSteps:
       Message: "CodeBuild project ${aws_codebuild_project.this.name} started for release {{ S3ObjectKey }} with Build ID {{ StartCodeBuild.BuildId }} at {{ global:DATE_TIME }}"
 EOF
 }
+
 
