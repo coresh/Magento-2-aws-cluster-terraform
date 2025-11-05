@@ -111,7 +111,7 @@ module "ecs_service" {
           value = local.env.ecs.container[each.key].memory
         }
       ] : []
-      linux_parameters = {
+      linuxParameters = {
         init_process_enabled = true
         tmpfs = each.key == "varnish" ? [
           {
