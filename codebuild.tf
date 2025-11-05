@@ -101,7 +101,7 @@ resource "aws_codebuild_project" "this" {
     }
     environment_variable {
       name  = "S3_RELEASE_BUCKET"
-      value = module.s3["releases"].s3_bucket_arn
+      value = module.s3["releases"].s3_bucket_id
     }
     environment_variable {
       name  = "RELEASE_FILE"
@@ -167,6 +167,7 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
 
 
