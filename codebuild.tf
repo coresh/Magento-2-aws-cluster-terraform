@@ -93,7 +93,7 @@ resource "aws_codebuild_project" "this" {
   environment {
     compute_type    = "BUILD_GENERAL1_LARGE"
     image           = "aws/codebuild/amazonlinux-x86_64-standard:5.0"
-    type            = "LINUX_EC2"
+    type            = "LINUX_CONTAINER"
     privileged_mode = true
     environment_variable {
       name  = "EFS_SYSTEM_ID"
@@ -167,6 +167,7 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
 
 
