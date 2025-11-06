@@ -148,7 +148,6 @@ resource "aws_codestarnotifications_notification_rule" "codebuild" {
     "codebuild-project-build-state-stopped",
     "codebuild-project-build-state-succeeded"
   ]
-
   target {
     address = module.sns["devops"].arn
   }
@@ -186,14 +185,3 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
-
-
-
-
-
-
-
-
-
-
-
