@@ -83,7 +83,7 @@ resource "aws_iam_role_policy" "codebuild" {
 # Create CodeBuild project
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codebuild_project" "this" {
-  name          = "${local.project}-efs-deploy"
+  name          = "${local.project}-deploy-release"
   description   = "Deploy releases from S3 to EFS for ${local.project}"
   service_role  = aws_iam_role.codebuild.arn
   build_timeout = 30
@@ -166,6 +166,7 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
 
 
