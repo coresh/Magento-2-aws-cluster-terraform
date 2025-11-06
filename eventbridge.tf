@@ -37,7 +37,7 @@ module "eventbridge" {
         "detail-type" : ["Object Created"],
         "detail"      : {
           "bucket" : { "name" : [module.s3["releases"].s3_bucket_id] },
-          "object" : { "key" : [{ "suffix" : ".tar.gz" }] }
+          "object" : { "key" : [{ "suffix" : ".gz" }] }
         }
       })
       enabled = true
@@ -71,4 +71,5 @@ END
   create_targets      = true
   depends_on = [module.autoscaling]
 }
+
 
