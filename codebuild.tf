@@ -92,8 +92,8 @@ resource "aws_codebuild_project" "this" {
   }
   environment {
     compute_type    = "BUILD_GENERAL1_LARGE"
-    image           = "aws/codebuild/amazonlinux-x86_64-standard:5.0"
-    type            = "LINUX_CONTAINER"
+    image           = "aws/codebuild/amazonlinux-aarch64-standard:3.0"
+    type            = "ARM_CONTAINER"
     privileged_mode = true
     environment_variable {
       name  = "S3_RELEASE_BUCKET"
@@ -168,6 +168,7 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
 
 
