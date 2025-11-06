@@ -136,6 +136,24 @@ resource "aws_codebuild_project" "this" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create CodeBuild notification rules
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_codestarnotifications_notification_rule" "codebuild" {
+  name        = "${local.project}-codebuild-failures"
+  status      = "ENABLED"
+  detail_type = "BASIC"
+  resource    = aws_codebuild_project.this.arn
+  event_type_ids = [
+    "codebuild-project-build-state-failed",
+    "codebuild-project-build-state-stopped",
+    "codebuild-project-build-state-succeeded"
+  ]
+
+  target {
+    address = module.sns["devops"].arn
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create CodeBuild security group
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "codebuild_security_group" {
@@ -168,6 +186,7 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
 
 
