@@ -96,10 +96,6 @@ resource "aws_codebuild_project" "this" {
     type            = "LINUX_CONTAINER"
     privileged_mode = true
     environment_variable {
-      name  = "EFS_SYSTEM_ID"
-      value = module.efs.id
-    }
-    environment_variable {
       name  = "S3_RELEASE_BUCKET"
       value = module.s3["releases"].s3_bucket_id
     }
@@ -111,6 +107,12 @@ resource "aws_codebuild_project" "this" {
       name  = "PROJECT"
       value = local.project
     }
+  }
+  file_system_locations {
+    type        = "EFS"
+    location    = "${module.efs.dns_name}:/"
+    mount_point = "/mnt/efs"
+    identifier  = "mount_release"
   }
   source {
     type      = "NO_SOURCE"
@@ -166,6 +168,7 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
 
 
