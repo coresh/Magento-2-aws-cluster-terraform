@@ -125,12 +125,11 @@ resource "aws_codebuild_project" "this" {
   }
   logs_config {
     cloudwatch_logs {
-      group_name  = "codebuild"
-      stream_name = "codebuild"
+      group_name  = "${local.project}-codebuild-release"
+      stream_name = "${local.project}-codebuild-release"
     }
     s3_logs {
-      status   = "ENABLED"
-      location = "${module.s3["logs"].s3_bucket_arn}/codebuild"
+      status   = "DISABLED"
     }
   }
 }
@@ -167,6 +166,7 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
 
 
