@@ -30,18 +30,6 @@ resource "aws_iam_role_policy" "codebuild" {
       {
         Effect = "Allow"
         Action = [
-          "s3:GetObject",
-          "s3:GetObjectVersion",
-          "s3:GetBucketVersioning"
-        ]
-        Resource = [
-          module.s3["releases"].s3_bucket_arn,
-          "${module.s3["releases"].s3_bucket_arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents"
@@ -177,6 +165,7 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
 
 
