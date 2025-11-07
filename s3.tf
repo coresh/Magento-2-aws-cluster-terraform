@@ -81,6 +81,7 @@ data "aws_iam_policy_document" "releases" {
       identifiers =  aws_iam_role.codebuild.arn
     }
   }
+}
 
 data "aws_iam_policy_document" "media" {
   statement {
