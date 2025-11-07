@@ -31,21 +31,43 @@ resource "aws_ssm_parameter" "efs" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 module "efs" {
   source         = "terraform-aws-modules/efs/aws"
-  version        = "1.8.0"
+  version        = "2.0.0"
   name           = "${local.project}-magento"
   creation_token = "${local.project}-magento-efs"
   encrypted      = true
-  attach_policy  = true
   enable_backup_policy  = false
   mount_targets         = { for az, id in zipmap(module.vpc.azs, module.vpc.private_subnets) : az => { subnet_id = id } }
   security_group_vpc_id = module.vpc.vpc_id
   security_group_name   = "${local.project}-efs"
-  security_group_rules  = {
+  security_group_description = "EFS security group for ${local.project}"
+  security_group_ingress_rules  = {
     vpc = {
       description = "NFS ingress from VPC private subnets"
-      cidr_blocks = module.vpc.private_subnets_cidr_blocks
+      ip_protocol = "tcp"
+      from_port   = 2049
+      to_port     = 2049
+      cidr_ipv4   = module.vpc.vpc_cidr_block
     }
   }
+  attach_policy = true
+  policy_statements = [
+    {
+      sid     = "EFSAccess"
+      actions = [
+        "elasticfilesystem:ClientWrite",
+        "elasticfilesystem:ClientMount"
+      ]
+      principals = [
+        {
+          type        = "AWS"
+          identifiers = [
+            module.ecs_cluster.task_exec_iam_role_arn,
+            aws_iam_role.codebuild.arn
+         ]
+        }
+      ]
+    }
+  ]
   access_points = { for name, config in local.env.efs : name => {
     name = name
     posix_user = {
