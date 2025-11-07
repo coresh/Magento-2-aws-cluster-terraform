@@ -97,7 +97,7 @@ data "aws_iam_policy_document" "media" {
     ]
     principals {
       type        = "AWS"
-      identifiers = [module.ecs_cluster.task_exec_iam_role_arn]
+      identifiers = [module.ecs_cluster["backend"].task_exec_iam_role_arn]
     }
   }
   statement {
