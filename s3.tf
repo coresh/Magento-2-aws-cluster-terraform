@@ -92,8 +92,8 @@ data "aws_iam_policy_document" "media" {
       "s3:ListBucket"
     ]
     resources = [
-      "${moduel.s3["media"].s3_bucket_arn}",
-      "${moduel.s3["media"].s3_bucket_arn}/*"
+      "${module.s3["media"].s3_bucket_arn}",
+      "${module.s3["media"].s3_bucket_arn}/*"
     ]
     principals {
       type        = "AWS"
@@ -106,7 +106,7 @@ data "aws_iam_policy_document" "media" {
     actions = [
       "s3:GetObject"
     ]
-    resources = ["${moduel.s3["media"].s3_bucket_arn}/*"]
+    resources = ["${module.s3["media"].s3_bucket_arn}/*"]
     principals {
       type        = "AWS"
       identifiers = [module.imgproxy.lambda_function_arn]
