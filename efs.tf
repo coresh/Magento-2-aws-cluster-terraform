@@ -51,19 +51,19 @@ module "efs" {
   }
   attach_policy = true
   policy_statements = {
-    {
-      sid     = "EFSAccess"
-      actions = [
-        "elasticfilesystem:ClientWrite",
-        "elasticfilesystem:ClientMount"
-      ]
-      principals = [
-        {
-          type        = "AWS"
-          identifiers = [
-            module.ecs_cluster.task_exec_iam_role_arn,
-            aws_iam_role.codebuild.arn
-         ]
+  EFSAccess = {
+    sid = "EFSAccess"
+    actions = [
+      "elasticfilesystem:ClientWrite", 
+      "elasticfilesystem:ClientMount"
+    ]
+    principals = [
+      {
+        type        = "AWS"
+        identifiers = [
+          module.ecs_cluster.task_exec_iam_role_arn,
+          aws_iam_role.codebuild.arn
+          ]
         }
       ]
     }
