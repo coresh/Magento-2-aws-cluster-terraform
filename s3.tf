@@ -148,7 +148,10 @@ data "aws_iam_policy_document" "backup" {
 
 locals {
   bucket_policy = {
-    for name in local.env.s3bucket : name => data.aws_iam_policy_document[name].json
+    "logs"      = data.aws_iam_policy_document.logs.json
+    "media"     = data.aws_iam_policy_document.media.json
+    "releases"  = data.aws_iam_policy_document.releases.json
+    "backup"    = data.aws_iam_policy_document.backup.json
   }
 }
 
