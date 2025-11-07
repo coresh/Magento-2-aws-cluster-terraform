@@ -143,6 +143,7 @@ data "aws_iam_policy_document" "backup" {
       identifiers = [aws_iam_role.ssm_service_role.arn]
     }
   }
+}
 
 locals {
   bucket_policy = {
