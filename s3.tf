@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "logs" {
     actions = [
       "s3:PutObject"
     ]
-    resources = ["${module.s3.["logs"].s3_bucket_arn}/cloudfront/*"]
+    resources = ["${module.s3["logs"].s3_bucket_arn}/cloudfront/*"]
     principals {
       type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
@@ -117,7 +117,7 @@ data "aws_iam_policy_document" "media" {
     actions = [
       "s3:GetObject"
     ]
-    resources = ["${module.s3.["media"].s3_bucket_arn}/*"]
+    resources = ["${module.s3["media"].s3_bucket_arn}/*"]
     principals {
       type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
@@ -146,7 +146,7 @@ data "aws_iam_policy_document" "backup" {
 
 locals {
   bucket_policy = {
-    for name in local.env.s3.bucket : name => data.aws_iam_policy_document[name].json
+    for name in local.env.s3bucket : name => data.aws_iam_policy_document[name].json
   }
 }
 
