@@ -32,18 +32,6 @@ resource "aws_ssm_parameter" "s3" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "logs" {
   statement {
-    sid    = "ALBS3Access"
-    effect = "Allow"
-    actions = [
-      "s3:PutObject"
-    ]
-    resources = ["${module.s3["logs"].s3_bucket_arn}/ALB_logs/*"]
-    principals {
-      type        = "AWS"
-      identifiers = [data.aws_elb_service_account.current.arn]
-    }
-  }
-  statement {
     sid    = "CloudFrontS3Access"
     effect = "Allow"
     actions = [
@@ -171,6 +159,7 @@ module "s3" {
   object_ownership         = "ObjectWriter"
   expected_bucket_owner    = data.aws_caller_identity.current.account_id
   attach_elb_log_delivery_policy = each.key == "logs" ? true : false
+  attach_waf_log_delivery_policy = each.key == "logs" ? true : false
   versioning = {
     enabled = each.value.versioning
   }  
