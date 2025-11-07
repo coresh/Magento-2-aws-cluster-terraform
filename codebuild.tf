@@ -112,7 +112,7 @@ resource "aws_codebuild_project" "this" {
     type        = "EFS"
     location    = "${module.efs.dns_name}:/"
     mount_point = "/mnt/efs"
-    identifier  = "mount_release"
+    identifier  = "efs_mount"
   }
   source {
     type      = "NO_SOURCE"
@@ -185,4 +185,5 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
