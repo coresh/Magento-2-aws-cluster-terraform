@@ -7,6 +7,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
+data "aws_elb_service_account" "current" {}
 data "aws_ami" "this" {
   most_recent = true
   owners      = ["136693071363"]
