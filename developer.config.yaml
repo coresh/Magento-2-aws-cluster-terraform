@@ -468,7 +468,6 @@ s3:
     media:
       versioning: false
       eventbridge: false
-      policy: "media_bucket_policy"
       intelligent_tiering:
         status: "Enabled"
       lifecycle_rule:
@@ -476,7 +475,6 @@ s3:
     releases:
       eventbridge: true
       versioning: true
-      policy: "releases_bucket_policy"
       intelligent_tiering:
         status: "Disabled"
       lifecycle_rule:
@@ -484,7 +482,6 @@ s3:
     backup:
       eventbridge: true
       versioning: true
-      policy: "backup_bucket_policy"
       intelligent_tiering:
         status: "Disabled"
       lifecycle_rule:
@@ -492,7 +489,6 @@ s3:
     logs:
       versioning: false
       eventbridge: false
-      policy: "logs_bucket_policy"
       intelligent_tiering:
         status: "Enabled"
       lifecycle_rule:
