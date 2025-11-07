@@ -67,14 +67,6 @@ resource "aws_iam_role_policy" "codebuild" {
           "ec2:CreateNetworkInterfacePermission"
         ]
         Resource = ["*"]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticfilesystem:ClientMount",
-          "elasticfilesystem:ClientWrite"
-        ]
-        Resource = module.efs.arn
       }
     ]
   })
@@ -185,5 +177,6 @@ module "codebuild_security_group" {
     Name = "${local.project}-codebuild"
   }
 }
+
 
 
