@@ -157,16 +157,6 @@ module "ecs_service" {
       resources = [
         "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/*"
       ]
-    },
-    {
-      sid = "EFSAccess"
-      actions = [
-        "elasticfilesystem:ClientWrite",
-        "elasticfilesystem:ClientMount"
-      ]
-      resources = [
-        module.efs.arn
-      ]
     }
   ]
   security_group_ingress_rules = {
