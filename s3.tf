@@ -40,7 +40,7 @@ data "aws_iam_policy_document" "logs" {
     resources = ["${module.s3["logs"].s3_bucket_arn}/ALB_logs/*"]
     principals {
       type        = "AWS"
-      identifiers = [module.alb.arn]
+      identifiers = [logdelivery.elasticloadbalancing.amazonaws.com]
     }
   }
   statement {
