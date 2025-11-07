@@ -58,14 +58,6 @@ module "imgproxy" {
           "cloudwatch:PutMetricStream"
         ]
         Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:GetObjectVersion"
-        ]
-        Resource = "${module.s3["media"].s3_bucket_arn}/*"
       }
     ]
   })
