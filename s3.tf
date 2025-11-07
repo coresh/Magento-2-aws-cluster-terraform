@@ -32,12 +32,10 @@ resource "aws_ssm_parameter" "s3" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "logs" {
   statement {
-    sid    = "CloudFrontS3Access"
-    effect = "Allow"
     actions = [
       "s3:PutObject"
     ]
-    resources = ["${module.s3["logs"].s3_bucket_arn}/cloudfront/*"]
+    resources = [${module.s3["logs"].s3_bucket_arn}]
     principals {
       type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
@@ -52,8 +50,6 @@ data "aws_iam_policy_document" "logs" {
 
 data "aws_iam_policy_document" "releases" {
  statement {
-    sid    = "AllowCodebuildS3Access"
-    effect = "Allow"
     actions = [
       "s3:ListBucket",
       "s3:GetObject",
@@ -61,7 +57,7 @@ data "aws_iam_policy_document" "releases" {
       "s3:GetBucketVersioning"
     ]
     resources = [
-      "${module.s3["releases"].s3_bucket_arn}",
+      module.s3["releases"].s3_bucket_arn,
       "${module.s3["releases"].s3_bucket_arn}/*"
     ]
     principals {
@@ -73,14 +69,12 @@ data "aws_iam_policy_document" "releases" {
 
 data "aws_iam_policy_document" "media" {
   statement {
-    sid       = "ECSS3Access"
-    effect    = "Allow"
     actions = [
       "s3:PutObject",
       "s3:ListBucket"
     ]
     resources = [
-      "${module.s3["media"].s3_bucket_arn}",
+      module.s3["media"].s3_bucket_arn,
       "${module.s3["media"].s3_bucket_arn}/*"
     ]
     principals {
@@ -89,8 +83,6 @@ data "aws_iam_policy_document" "media" {
     }
   }
   statement {
-    sid       = "LambdaS3Access"
-    effect    = "Allow"
     actions = [
       "s3:GetObject"
     ]
@@ -101,8 +93,6 @@ data "aws_iam_policy_document" "media" {
     }
   }
   statement {
-    sid    = "CloudFrontS3Access"
-    effect = "Allow"
     actions = [
       "s3:GetObject"
     ]
@@ -121,8 +111,6 @@ data "aws_iam_policy_document" "media" {
 
 data "aws_iam_policy_document" "backup" {
   statement {
-    sid    = "SSMS3Access"
-    effect = "Allow"
     actions = [
       "s3:PutObject"
     ]
