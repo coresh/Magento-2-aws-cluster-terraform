@@ -61,7 +61,7 @@ module "efs" {
       {
         type        = "AWS"
         identifiers = [
-          module.ecs_cluster.task_exec_iam_role_arn,
+          module.ecs_cluster["backend"].task_exec_iam_role_arn,
           aws_iam_role.codebuild.arn
           ]
         }
