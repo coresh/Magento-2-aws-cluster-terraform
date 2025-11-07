@@ -37,7 +37,7 @@ data "aws_iam_policy_document" "logs" {
     actions = [
       "s3:PutObject"
     ]
-    resources = ["${module.s3["logs"].arn}/ALB_logs/*"]
+    resources = ["${module.s3["logs"].s3_bucket_arn}/ALB_logs/*"]
     principals {
       type        = "AWS"
       identifiers = [module.alb.arn]
@@ -92,8 +92,8 @@ data "aws_iam_policy_document" "media" {
       "s3:ListBucket"
     ]
     resources = [
-      "${moduel.s3["media"].arn}",
-      "${moduel.s3["media"].arn}/*"
+      "${moduel.s3["media"].s3_bucket_arn}",
+      "${moduel.s3["media"].s3_bucket_arn}/*"
     ]
     principals {
       type        = "AWS"
@@ -106,7 +106,7 @@ data "aws_iam_policy_document" "media" {
     actions = [
       "s3:GetObject"
     ]
-    resources = ["${moduel.s3["media"].arn}/*"]
+    resources = ["${moduel.s3["media"].s3_bucket_arn}/*"]
     principals {
       type        = "AWS"
       identifiers = [module.imgproxy.lambda_function_arn]
@@ -138,7 +138,7 @@ data "aws_iam_policy_document" "backup" {
     actions = [
       "s3:PutObject"
     ]
-    resources = ["${module.s3["backup"].arn}/*"]
+    resources = ["${module.s3["backup"].s3_bucket_arn}/*"]
     principals {
       type        = "AWS"
       identifiers = [aws_iam_role.ssm_service_role.arn]
