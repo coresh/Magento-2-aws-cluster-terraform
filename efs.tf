@@ -50,7 +50,7 @@ module "efs" {
     }
   }
   attach_policy = true
-  policy_statements = [
+  policy_statements = {
     {
       sid     = "EFSAccess"
       actions = [
@@ -67,7 +67,7 @@ module "efs" {
         }
       ]
     }
-  ]
+  }
   access_points = { for name, config in local.env.efs : name => {
     name = name
     posix_user = {
