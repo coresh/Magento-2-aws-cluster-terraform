@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "logs" {
     actions = [
       "s3:PutObject"
     ]
-    resources = [${module.s3["logs"].s3_bucket_arn}]
+    resources = [module.s3["logs"].s3_bucket_arn]
     principals {
       type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
