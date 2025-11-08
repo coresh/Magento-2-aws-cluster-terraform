@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "logs" {
     condition {
       test     = "ArnLike"
       variable = "AWS:SourceArn"
-      values   = [module.cloudfront.cloudfront_distribution_arn]
+      values   = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/*"]
     }
   }
 }
@@ -52,9 +52,7 @@ data "aws_iam_policy_document" "releases" {
  statement {
     actions = [
       "s3:ListBucket",
-      "s3:GetObject",
-      "s3:GetObjectVersion",
-      "s3:GetBucketVersioning"
+      "s3:GetObject"
     ]
     resources = [
       module.s3["releases"].s3_bucket_arn,
@@ -79,32 +77,18 @@ data "aws_iam_policy_document" "media" {
     ]
     principals {
       type        = "AWS"
-      identifiers = [module.ecs_service["backend"].tasks_iam_role_arn]
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.project}-backend*"]
     }
   }
   statement {
     actions = [
-      "s3:GetObject"
+      "s3:GetObject",
+      "s3:ListBucket"
     ]
-    resources = ["${module.s3["media"].s3_bucket_arn}/*"]
+    resources = [module.s3["media"].s3_bucket_arn]
     principals {
       type        = "AWS"
-      identifiers = [module.imgproxy.lambda_function_arn]
-    }
-  }
-  statement {
-    actions = [
-      "s3:GetObject"
-    ]
-    resources = ["${module.s3["media"].s3_bucket_arn}/*"]
-    principals {
-      type        = "Service"
-      identifiers = ["cloudfront.amazonaws.com"]
-    }
-    condition {
-      test     = "ArnLike"
-      variable = "AWS:SourceArn"
-      values   = [module.cloudfront.cloudfront_distribution_arn]
+      identifiers = ["*"]
     }
   }
 }
