@@ -33,6 +33,7 @@ vpc:
     - "use1-az3"
 
 nat_gateway:
+  single: true
   instance_type: "t4g.nano"
   ami_owner: "136693071363"
   ami_image: "debian-13-arm64*"
@@ -387,7 +388,7 @@ ecr:
 
 ecs:
   cluster:
-    multi_az: true
+    multi_az: false
     minimum_scaling_step_size: 1
     maximum_scaling_step_size: 6
     target_capacity: 70
