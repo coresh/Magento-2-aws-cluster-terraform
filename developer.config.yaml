@@ -388,7 +388,6 @@ ecr:
 
 ecs:
   cluster:
-    multi_az: false
     minimum_scaling_step_size: 1
     maximum_scaling_step_size: 6
     target_capacity: 70
@@ -428,6 +427,7 @@ ecs:
         - AURORA_MASTER_PASSWORD
 
 asg:
+  multi_az: false
   health_check_type: "EC2"
   protect_from_scale_in: true
   instance_warmup: 60
