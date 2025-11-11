@@ -18,7 +18,7 @@ module "autoscaling" {
   echo ECS_CLUSTER="${local.project}-${each.key}-ecs-cluster" >> /etc/ecs/ecs.config
   EOF
   )
-  vpc_zone_identifier    = module.vpc.private_subnets
+  vpc_zone_identifier    = local.env.asg.multi_az ? module.vpc.private_subnets : [module.vpc.primary_private_subnet_id]
   health_check_type      = local.env.asg.health_check_type
   min_size               = each.value.min_size
   max_size               = each.value.max_size

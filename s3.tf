@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "logs" {
     actions = [
       "s3:PutObject"
     ]
-    resources = [module.s3["logs"].s3_bucket_arn]
+    resources = ["${module.s3["logs"].s3_bucket_arn}/*"]
     principals {
       type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
@@ -68,8 +68,7 @@ data "aws_iam_policy_document" "releases" {
 data "aws_iam_policy_document" "media" {
   statement {
     actions = [
-      "s3:PutObject",
-      "s3:ListBucket"
+      "s3:PutObject"
     ]
     resources = [
       module.s3["media"].s3_bucket_arn,
@@ -77,7 +76,7 @@ data "aws_iam_policy_document" "media" {
     ]
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.project}-backend*"]
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/*"]
     }
   }
   statement {
@@ -85,7 +84,10 @@ data "aws_iam_policy_document" "media" {
       "s3:GetObject",
       "s3:ListBucket"
     ]
-    resources = [module.s3["media"].s3_bucket_arn]
+    resources = [
+      module.s3["media"].s3_bucket_arn,
+      "${module.s3["media"].s3_bucket_arn}/*"
+    ]
     principals {
       type        = "AWS"
       identifiers = ["*"]

@@ -44,6 +44,7 @@ managed_services: &create true
 
 elasticache:
   create: *create
+  multi_az: false
   engine: "valkey"
   engine_version: "8.2"
   cluster:
@@ -128,6 +129,7 @@ opensearch:
     desired_state: "DISABLED"
   instance_count: 1 # *availability_zone_total
   multi_az_with_standby_enabled: false
+  multi_az: false
   tls_security_policy: "Policy-Min-TLS-1-2-PFS-2023-10"
   ebs_enabled: true
   volume_type: "gp3"
@@ -174,6 +176,7 @@ opensearch:
 
 aurora:
   create: *create
+  multi_az: false
   storage_type: "gp3"
   storage_encrypted: true
   instance_class: "db.t3.medium"

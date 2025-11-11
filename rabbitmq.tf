@@ -47,7 +47,7 @@ resource "aws_mq_broker" "this" {
   host_instance_type = local.env.rabbitmq.host_instance_type
   security_groups    = [module.rabbitmq_security_group.security_group_id]
   deployment_mode    = local.env.rabbitmq.deployment_mode
-  subnet_ids         = local.env.rabbitmq.deployment_mode == "SINGLE_INSTANCE" ? slice(module.vpc.private_subnets, 0, 1) : module.vpc.private_subnets
+  subnet_ids         = local.env.rabbitmq.deployment_mode == "SINGLE_INSTANCE" ? [module.vpc.primary_private_subnet_id] : module.vpc.private_subnets
   user {
     username         = local.env.brand
     password         = random_password.rabbitmq.result

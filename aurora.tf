@@ -81,6 +81,7 @@ module "aurora" {
     }
   }
   db_subnet_group_name = module.vpc.database_subnet_group_name
+  subnets = local.env.aurora.multi_az ? module.vpc.database_subnets : [module.vpc.primary_database_subnet_id]
   enabled_cloudwatch_logs_exports = local.env.aurora.enabled_cloudwatch_logs_exports
   cluster_performance_insights_enabled          = local.env.aurora.cluster_performance_insights_enabled
   cluster_performance_insights_retention_period = local.env.aurora.cluster_performance_insights_retention_period

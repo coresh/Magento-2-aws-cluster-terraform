@@ -51,8 +51,8 @@ module "elasticache" {
   engine_version             = local.env.elasticache.engine_version
   node_type                  = each.value.node_type
   num_cache_clusters         = each.value.num_cache_clusters
-  automatic_failover_enabled = local.env.vpc.availability_zone_total > 1 && each.value.num_cache_clusters > 1 ? true : false
-  multi_az_enabled           = local.env.vpc.availability_zone_total > 1 && each.value.num_cache_clusters > 1 ? true : false
+  automatic_failover_enabled = local.env.elasticache.multi_az
+  multi_az_enabled           = local.env.elasticache.multi_az
   transit_encryption_enabled = each.value.transit_encryption_enabled
   at_rest_encryption_enabled = each.value.at_rest_encryption_enabled
   auth_token                 = random_password.elasticache.result
@@ -68,7 +68,7 @@ module "elasticache" {
   }
   subnet_group_name           = "${local.project}-${each.key}-subnet"
   subnet_group_description    = "${title(local.project)} subnet group"
-  subnet_ids                  = module.vpc.private_subnets
+  subnet_ids                  = local.env.elasticache.multi_az ? module.vpc.private_subnets : [module.vpc.primary_private_subnet_id]
   create_parameter_group      = true
   parameter_group_name        = "${local.project}-${each.key}-parameters"
   parameter_group_family      = local.env.elasticache.parameter_group_family

@@ -101,9 +101,9 @@ module "opensearch" {
       }
     }
     multi_az_with_standby_enabled = local.env.opensearch.multi_az_with_standby_enabled
-    zone_awareness_enabled = local.env.vpc.availability_zone_total > 1 && local.env.opensearch.instance_count > 1 ? true : false
+    zone_awareness_enabled = local.env.opensearch.multi_az
     zone_awareness_config = {
-        availability_zone_count = local.env.vpc.availability_zone_total > 1 ? local.env.vpc.availability_zone_total : null
+        availability_zone_count = local.env.opensearch.multi_az ? local.env.vpc.availability_zone_total : 1
       }
   }
   ebs_options = {
@@ -121,7 +121,7 @@ module "opensearch" {
     auto_software_update_enabled = local.env.opensearch.auto_software_update_enabled
   }
   vpc_options = {
-    subnet_ids = local.env.vpc.availability_zone_total > 1 && local.env.opensearch.instance_count > 1 ? module.vpc.private_subnets : slice(module.vpc.private_subnets, 0, 1)
+    subnet_ids = local.env.opensearch.multi_az ? module.vpc.private_subnets : [module.vpc.primary_private_subnet_id]
   }
   security_group_name  = "${local.project}-opensearch"
   security_group_rules = {
